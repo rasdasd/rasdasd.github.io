@@ -46,6 +46,30 @@ class Tray {
     }
 }
 
+class ScoreCounter {
+    node = null;
+    score = null;
+    constructor(player) {
+        this.node = document.createElement('div');
+        this.node.classList.add(`score-${player}`);
+        this.node.classList.add('score');
+        const up = document.createElement('i');
+        up.classList.add('arrow');
+        up.classList.add('up');
+        this.score = document.createElement('div');
+        this.score.classList.add('score-value');
+        this.score.textContent = 0;
+        const down = document.createElement('i');
+        down.classList.add('arrow');
+        down.classList.add('down');
+        up.onclick = () => this.score.textContent -= -1;
+        down.onclick = () => this.score.textContent -= 1;
+        this.node.append(up);
+        this.node.append(this.score);
+        this.node.append(down);
+    }
+}
+
 const player1 = new Tray(1);
 const player2 = new Tray(2);
 
@@ -61,5 +85,14 @@ resetButton.onclick = () => {
 };
 resetButton.classList.add('reset-button');
 
-document.getElementsByTagName('body')[0].append(resetButton);
+
+bottom = document.createElement('div');
+bottom.classList.add(`bottom`);
+document.getElementsByTagName('body')[0].append(bottom);
+
+bottom.append(new ScoreCounter(1).node);
+bottom.append(resetButton);
+bottom.append(new ScoreCounter(2).node);
+
+
 
