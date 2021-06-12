@@ -7,6 +7,7 @@ class Person {
         this.node.classList.add(`person-${player}`);
         let photo = document.createElement('img');
         photo.src = `assets/${id}.jpg`;
+        photo.draggable = false;
         photo.classList.add('photo')
         this.node.append(photo);
         photo.onclick = () => this.toggle();
