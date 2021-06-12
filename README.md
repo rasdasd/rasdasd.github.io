@@ -1,1 +1,1 @@
-[LIVE SITE](www.rasdasd.github.io)
+[LIVE SITE](https://rasdasd.github.io)
