@@ -98,7 +98,7 @@ const track_names = [
     'loop1',
     '1_2',
     'loop2',
-    '~loop3',
+    'NOTloop3',
     '3_4',
     'loop4',
     'loop5',
