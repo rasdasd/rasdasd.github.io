@@ -1,99 +1,218 @@
-class Person {
-    node = null;
-    constructor(id, player) {
-        this.id = id;
-        this.node = document.createElement('div');
-        this.node.classList.add('person');
-        this.node.classList.add(`person-${player}`);
-        let photo = document.createElement('img');
-        photo.src = `assets/${id}.jpg`;
-        photo.draggable = false;
-        photo.classList.add('photo')
-        this.node.append(photo);
-        photo.onclick = () => this.toggle();
-    }
+function loopify(uri,cb,doLoop) {
 
-    reset() {
-        this.toggle(true);
-    }
+    var context = new (window.AudioContext || window.webkitAudioContext)(),
+        request = new XMLHttpRequest();
 
-    toggle(forced) {
-        if (forced) {
-            this.node.classList.remove('face-down');
-        } else {
-            this.node.classList.toggle('face-down');
+    request.responseType = "arraybuffer";
+    request.open("GET", uri, true);
+
+    // XHR failed
+    request.onerror = function() {
+      cb(new Error("Couldn't load audio from " + uri));
+    };
+
+    // XHR complete
+    request.onload = function() {
+      context.decodeAudioData(request.response,success,function(err){
+        // Audio was bad
+        cb(new Error("Couldn't decode audio from " + uri));
+      });
+    };
+
+    request.send();
+
+    function success(buffer) {
+
+      var source;
+
+      function play() {
+
+        console.log(`playing ${uri}`);
+
+        // Stop if it's already playing
+        stop();
+
+        // Create a new source (can't replay an existing source)
+        source = context.createBufferSource();
+        source.connect(context.destination);
+
+        // Set the buffer
+        source.buffer = buffer;
+        source.loop = false;
+
+        // Play it
+        source.start(0);
+
+        source.onended = () => {
+            if (doLoop()) {
+                play();
+            } else {
+                stop();
+            }
         }
-    }
 
-}
+      }
 
-class Tray {
-    node = null;
-    constructor(player) {
-        this.player = player;
-        this.node = document.createElement('div');
-        this.node.classList.add('tray');
-        this.node.classList.add(`tray-${player}`);
-        this.persons = [];
-        for (let i = 0; i < 24; i++) {
-            const person = new Person(i, player);
-            this.persons.push(person);
-            this.node.append(person.node);
+      function stop() {
+
+        // Stop and clear if it's playing
+        if (source) {
+          source.stop();
+          source = null;
         }
+
+      }
+
+      cb(null,{
+        play: play,
+        stop: stop
+      });
+
     }
 
-    reset() {
-        this.persons.forEach( p => p.reset());
-    }
+  }
+
+
+function button(parent, text, onclick) {
+    let btn = document.createElement('BUTTON');
+    btn.innerHTML = text;
+    parent.appendChild(btn);
+    btn.onclick = onclick
+    return btn;
 }
 
-class ScoreCounter {
-    node = null;
-    score = null;
-    constructor(player) {
-        this.node = document.createElement('div');
-        this.node.classList.add(`score-${player}`);
-        this.node.classList.add('score');
-        const up = document.createElement('i');
-        up.classList.add('arrow');
-        up.classList.add('up');
-        this.score = document.createElement('div');
-        this.score.classList.add('score-value');
-        this.score.textContent = 0;
-        const down = document.createElement('i');
-        down.classList.add('arrow');
-        down.classList.add('down');
-        up.onclick = () => this.score.textContent -= -1;
-        down.onclick = () => this.score.textContent -= 1;
-        this.node.append(up);
-        this.node.append(this.score);
-        this.node.append(down);
-    }
+function load_audio(i, name) {
+    loopify(`./assets/tracks/${name}.mp3`, (err, loop) => tracks[i] = loop, () => doLoop(i))
 }
 
-const player1 = new Tray(1);
-const player2 = new Tray(2);
+function load_name(parent, name) {
+    let div = document.createElement('div');
+    div.classList.add('track_name');
+    div.innerText = name;
+    parent.appendChild(div);
+    return div;
+}
+
+const track_names = [
+    'start',
+    'loop1',
+    '1_2',
+    'loop2',
+    '~loop3',
+    '3_4',
+    'loop4',
+    'loop5',
+    '5_6',
+    'loop6',
+    '6_7',
+    'loop7',
+    '7_8',
+    'loop8',
+    '8_9',
+    'loop9',
+    '9_10',
+    'loop10',
+    'end',
+]
+
+const tracks = [];
+for (let i = 0; i < track_names.length; i++) {
+    tracks.push(null)
+    load_audio(i, track_names[i]);
+}
+const loops = track_names.map((track_name) => track_name.startsWith('loop'));
 
 const root = document.getElementById('root');
-root.append(player1.node);
-root.append(player2.node);
+const track_display = document.getElementById('track_display');
 
-const resetButton = document.createElement('button');
-resetButton.textContent = 'Restart Game'
-resetButton.onclick = () => {
-    player1.reset();
-    player2.reset();
-};
-resetButton.classList.add('reset-button');
+const name_divs = track_names.map((track_name) => load_name(track_display, track_name));
 
+let idx = 0;
+let current_track = null;
+let current_track_idx = 0;
+let override = false;
 
-bottom = document.createElement('div');
-bottom.classList.add(`bottom`);
-document.getElementsByTagName('body')[0].append(bottom);
+button(root, 'play', () => {
+    console.log(idx);
+    tracks[idx].play();
+    current_track = tracks[idx];
+    current_track_idx = idx;
+    updateState();
+});
+button(root, 'pause', () => {
+    override = true;
+    current_track.stop()
+    setTimeout(() => override = false, 1000);
+    updateState();
+});
+button(root, 'restart', () => {
+    override = true;
+    current_track.stop()
+    idx = 0;
+    console.log(idx);
+    setTimeout(() => override = false, 1000);
+    updateState();
+});
+button(root, 'prev', () => {
+    idx -= 1;
+    updateState();
+})
+button(root, 'next', () => {
+    idx += 1;
+    updateState();
+})
 
-bottom.append(new ScoreCounter(1).node);
-bottom.append(resetButton);
-bottom.append(new ScoreCounter(2).node);
+function updateState() {
+    name_divs.forEach((div, i, _) => {
+        if (i == idx) {
+            div.classList.add('idx');
+        } else {
+            div.classList.remove('idx');
+        }
+        if (i == current_track_idx) {
+            div.classList.add('playing');
+        } else {
+            div.classList.remove('playing');
+        }
+    })
+}
 
-
-
+function doLoop(i) {
+    if (override) {
+        console.log('override stop');
+        updateState();
+        return false;
+    }
+    console.log('doLoop check');
+    if (idx > i) {
+        console.log('play next', i + 1);
+        tracks[i + 1].play();
+        current_track = tracks[i + 1];
+        current_track_idx = i + 1;
+        updateState();
+        return false;
+    } else if (idx < i) {
+        console.log('play idx', idx);
+        tracks[idx].play();
+        current_track = tracks[idx];
+        current_track_idx = idx;
+        updateState();
+        return false;
+    } else if (loops[i]) {
+        console.log('loop');
+        updateState();
+        return true;
+    } else if (i < tracks.length - 1) {
+        console.log('play next', idx + 1);
+        idx += 1;
+        tracks[idx].play();
+        current_track = tracks[idx];
+        current_track_idx = idx;
+        updateState();
+        return false;
+    } else {
+        console.log('last one');
+        updateState();
+        return false;
+    }
+}
