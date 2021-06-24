@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="icon" href="favicon.ico" type="image/x-icon" />
         <link rel="stylesheet" href="css/style.css">
         <title>Music Controller</title>
     </head>
     <body>
         <div class="title">Music Controller</div>
-        <div id="root"></div>
+        <div id="root">
+            <audio id="bell" src="./assets/sounds/bell.wav" preload="auto"></audio>
+            <button onclick="document.getElementById('bell').play();">Play
+            Bell</button>
+
+
+        </div>
         <div id="track_display"></div>
        </div>
     </body>
