@@ -216,3 +216,9 @@ function doLoop(i) {
         return false;
     }
 }
+
+function sound(id) {
+    const el = document.getElementById(id);
+    el.currentTime = 0;
+    el.play();
+}

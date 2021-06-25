@@ -7,10 +7,25 @@
     </head>
     <body>
         <div class="title">Music Controller</div>
-        <div id="root">
+
+        <div class="sounds">
             <audio id="bell" src="./assets/sounds/bell.wav" preload="auto"></audio>
-            <button onclick="document.getElementById('bell').play();">Play
-            Bell</button>
+            <button class="sound" onclick="sound('bell');">
+            Big Bell</button>
+
+            <audio id="bell-chime" src="./assets/sounds/bell-chime.wav" preload="auto"></audio>
+            <button class="sound" onclick="sound('bell-chime');">
+            Small Bell</button>
+
+            <audio id="3-clock" src="./assets/sounds/3-clock.wav" preload="auto"></audio>
+            <button class="sound" onclick="sound('3-clock');">
+            3 Bell Clock</button>
+
+            <audio id="fairy-bell" src="./assets/sounds/fairy-bell.wav" preload="auto"></audio>
+            <button class="sound" onclick="sound('fairy-bell');">
+            Fairy Bell</button>
+        </div>
+        <div id="root">
 
 
         </div>

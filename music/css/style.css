@@ -39,6 +39,17 @@ button {
     cursor: pointer;
 }
 
+.sound {
+    background-color: #006600;
+}
+
+.sounds {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .track_name {
     width: 100%;
     text-align: center;
