@@ -1,29 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>My Soundboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soundboard</title>
     <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-    <h1>My Soundboard</h1>
-
-    <!-- Single sound buttons -->
-    <div id="sounds">
-        <!-- Buttons will be dynamically populated by main.js -->
+    <div id="soundboard">
+        <h1>Ambient Soundboard</h1>
+        <div id="ambientPlayer"></div>
+        <div id="soundButtons"></div>
     </div>
-
-    <!-- Ambient music selector -->
-    <div id="ambient-music">
-        <h2>Ambient Music</h2>
-        <select id="ambient-music-source">
-            <!-- Options will be dynamically populated by main.js -->
-        </select>
-    </div>
-
-    <script src="main.js"></script>
+    <script src="index.js"></script>
 </body>
 
 </html>
