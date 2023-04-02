@@ -1,0 +1,51 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#sounds {
+    margin-top: 50px;
+    text-align: center;
+}
+
+#sounds button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 1.2em;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#sounds button:hover {
+    background-color: #0D47A1;
+}
+
+#ambient-music {
+    margin-top: 50px;
+    text-align: center;
+}
+
+#ambient-music h2 {
+    margin-bottom: 20px;
+}
+
+#ambient-music select {
+    padding: 10px;
+    font-size: 1.2em;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#ambient-music select:hover {
+    background-color: #0D47A1;
+}
