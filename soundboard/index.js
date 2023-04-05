@@ -1,83 +1,81 @@
-// Load ambient data
-fetch('ambient.json')
-    .then(response => response.json())
-    .then(ambientData => initAmbientPlayer(ambientData))
-    .catch(error => console.error('Error loading ambient data:', error));
+$(document).ready(function () {
+    // Fetch and preload sounds from the assets folder
+    fetchSounds();
 
-// Initialize ambient player
-function initAmbientPlayer(ambientData) {
-    const player = document.getElementById('ambientPlayer');
+    // Play the sound when a button is clicked
+    $(document).on('click', '.sound-button', function () {
+        let audio = $(this).data('audio-object');
+        audio.currentTime = 0;
+        audio.play();
+    });
 
-    ambientData.forEach((data) => {
-        const iframe = document.createElement('iframe');
-        iframe.width = '100%';
-        iframe.height = '166';
-        iframe.frameBorder = 'no';
-        iframe.allow = 'autoplay';
+    // Change the active category when a tab is clicked
+    $(document).on('click', '.category-tab', function () {
+        let categoryId = $(this).data('category-id');
+        $('.category-tab').removeClass('active');
+        $(this).addClass('active');
+        $('.sound-category').hide();
+        $('#' + categoryId).show();
+    });
+});
 
-        switch (data.type) {
-            case 'youtube':
-                if (data.loop) {
-                    iframe.src = `${data.source}?autoplay=1&loop=1&playlist=${data.source.split('/').pop()}`;
-                } else {
-                    iframe.src = `${data.source}?autoplay=1`;
-                }
-                break;
-            case 'spotify':
-                if (data.loop) {
-                    iframe.src = `${data.source}?autoplay=1&loop=1`;
-                } else {
-                    iframe.src = `${data.source}?autoplay=1`;
-                }
-                break;
-            default:
-                console.error(`Unsupported type: ${data.type}`);
-                return;
-        }
 
-        // Add a container for each player and make it initially hidden
-        const playerContainer = document.createElement('div');
-        playerContainer.style.display = 'none';
-        playerContainer.appendChild(iframe);
-        player.appendChild(playerContainer);
-
-        // Add a button to control the visibility and playback of each player
-        const button = document.createElement('button');
-        button.textContent = data.description;
-        button.onclick = () => {
-            const isActive = playerContainer.style.display === 'block';
-            // Hide all player containers
-            player.childNodes.forEach((child) => {
-                if (child.nodeType === Node.ELEMENT_NODE) {
-                    child.style.display = 'none';
+function fetchSounds() {
+    $.ajax({
+        url: 'assets/',
+        success: function (data) {
+            let sounds = [];
+            $(data).find('a').each(function () {
+                let filename = $(this).attr('href');
+                if (filename.match(/\.mp3$|\.ogg$/)) {
+                    sounds.push({ name: filename, url: 'assets/' + filename });
                 }
             });
 
-            if (isActive) {
-                playerContainer.style.display = 'none';
-            } else {
-                playerContainer.style.display = 'block';
+            // Sort the sounds alphabetically and numerically
+            sounds.sort((a, b) => {
+                return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            // Group sounds by category
+            let categories = {};
+            sounds.forEach((sound) => {
+                let buttonText = sound.name.replace(/\.mp3$|\.ogg$/, ''); // Remove file extension
+                let [category, title] = buttonText.split('-', 2);
+                if (!categories[category]) {
+                    categories[category] = [];
+                }
+                categories[category].push({ title: title, url: sound.url });
+            });
+
+            // Add category tabs
+            for (const category in categories) {
+                let categoryTab = $('<button class="category-tab">' + category + '</button>');
+                categoryTab.data('category-id', category);
+                $('#category-list').append(categoryTab);
             }
-        };
 
-        player.appendChild(button);
+            // Add sound buttons to the soundboard and preload the audio files
+            for (const category in categories) {
+                let categoryDiv = $(`<div class="sound-category" id="${category}"></div>`);
+                categoryDiv.append(`<h2>${category}</h2>`);
+
+                categories[category].forEach((sound) => {
+                    let audio = new Audio(sound.url);
+                    audio.preload = 'auto';
+                    let button = $('<button class="sound-button">' + sound.title + '</button>');
+                    button.data('audio-object', audio);
+                    categoryDiv.append(button);
+                });
+
+                $('#soundboard').append(categoryDiv);
+            }
+            // Set the first category as the active category
+            $('.category-tab').first().addClass('active');
+            $('.sound-category').hide().first().show();
+        },
+        error: function (error) {
+            console.error('Error fetching sounds:', error);
+        },
     });
-}
-
-
-// Load sounds
-const sounds = ['bell.mp3', 'gong.mp3'];
-const soundButtons = document.getElementById('soundButtons');
-
-sounds.forEach(sound => {
-    const button = document.createElement('button');
-    button.textContent = sound.split('.')[0];
-    button.onclick = () => playSound(sound);
-    soundButtons.appendChild(button);
-});
-
-// Play sound
-function playSound(sound) {
-    const audio = new Audio(`sounds/${sound}`);
-    audio.play();
 }
