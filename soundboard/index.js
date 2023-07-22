@@ -22,7 +22,7 @@ $(document).ready(function () {
 
 function fetchSounds() {
     $.ajax({
-        url: 'https://raw.githubusercontent.com/rasdasd/rasdasd.github.io/master/soundboard/assets/',
+        url: 'assets/',
         success: function (data) {
             let sounds = [];
             $(data).find('a').each(function () {
