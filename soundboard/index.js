@@ -19,19 +19,25 @@ $(document).ready(function () {
     });
 });
 
-
 function fetchSounds() {
     $.ajax({
-        url: 'assets/',
+        url: 'https://api.github.com/repositories/222611418/contents/soundboard/assets/',
         success: function (data) {
-            let sounds = [];
-            $(data).find('a').each(function () {
-                let filename = $(this).attr('href');
-                if (filename.match(/\.mp3$|\.ogg$/)) {
-                    sounds.push({ name: filename, url: 'assets/' + filename });
+            // let sounds = [];
+            // $(data).find('a').each(function () {
+            //     let filename = $(this).attr('href');
+            //     if (filename.match(/\.mp3$|\.ogg$/)) {
+            //         sounds.push({ name: filename, url: 'assets/' + filename });
+            //     }
+            // });
+
+            const prefix_len = 'soundboard/'.length;
+            let sounds = data.filter(node => node.size > 0).map(node => {
+                return {
+                "url": node.path.substring(prefix_len),
+                "name": node.name
                 }
             });
-
             // Sort the sounds alphabetically and numerically
             sounds.sort((a, b) => {
                 return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
