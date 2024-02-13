@@ -16,6 +16,22 @@ let solved = false;
 
 console.log(currentCycle);
 
+function convertScoreToCommon(score) {
+    if (score >= 45) {
+        return "Common"
+    } else if (score >= 35) {
+        return "Uncommon"
+    } else if (score >= 25) {
+        return "Rare"
+    } else if (score >= 3) {
+        return "Very Rare"
+    } else if (score >= 2) {
+        return "Ultra Rare"
+    } else {
+        return "Unknown Rarity"
+    }
+}
+
 function initBoard() {
     let board = document.getElementById("game-board");
     let col1 = document.createElement("div");
@@ -24,6 +40,9 @@ function initBoard() {
     col2.className = "col-6";
     board.appendChild(col1);
     board.appendChild(col2);
+    let col3 = document.createElement("div");
+    col3.className = "col-6";
+    board.appendChild(col3);
 
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         let row = document.createElement("div")
@@ -44,12 +63,15 @@ function initBoard() {
         cluewrapper.appendChild(clue)
 
         // Create a tooltip icon
+        let cluewrapper2 = document.createElement("div");
+        cluewrapper2.className = "clue-wrapper"
         let tooltipIcon = document.createElement("span");
         tooltipIcon.className = "tooltip-icon";
-        tooltipIcon.title = sources[i] + " - " + scores[i];
-        cluewrapper.appendChild(tooltipIcon)
+        tooltipIcon.title = sources[i] + "<br>" + convertScoreToCommon(scores[i]);
+        cluewrapper2.appendChild(tooltipIcon)
 
         col2.appendChild(cluewrapper)
+        col3.appendChild(cluewrapper2)
 
 
 
@@ -61,6 +83,12 @@ function initBoard() {
         row.addEventListener("mouseleave", hideInfo);
         row.addEventListener("touchstart", displayInfo);
         row.addEventListener("touchend", hideInfo);
+    });
+
+    // on mouseclick or touch, change the active guess
+    document.querySelectorAll(".clue-wrapper, .letter-row").forEach(row => {
+        row.addEventListener("click", changeActiveGuessOnClick);
+        row.addEventListener("touchstart", changeActiveGuessOnClick);
     });
 
 
@@ -77,6 +105,7 @@ function displayInfo(event) {
     if (tooltip) {
         tooltip.classList.add("show-tooltip");
     }
+    toastr.info(tooltip.title, "Source");
 }
 
 function hideInfo(event) {
@@ -87,6 +116,31 @@ function hideInfo(event) {
     if (tooltip) {
         tooltip.classList.remove("show-tooltip");
     }
+    toastr.remove();
+}
+
+function changeActiveGuessOnClick(event) {
+    let clue = event.target;
+    if (clue.tagName !== "DIV") {
+        clue = clue.parentElement;
+    }
+    let clues = document.getElementsByClassName("clue-wrapper");
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        if (clues[i] === clue) {
+            changeActiveGuess(i);
+            updateActiveCell();
+            return;
+        }
+    }
+    let rows = document.getElementsByClassName("letter-row");
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        if (rows[i] === clue) {
+            changeActiveGuess(i);
+            updateActiveCell();
+            return;
+        }
+    }
+
 }
 
 function updateActiveCell() {
@@ -106,12 +160,15 @@ function updateActiveCell() {
 }
 
 function changeActiveGuess(newActive) {
-    let oldRow = document.getElementsByClassName("letter-row")[active_guess]
-    let newRow = document.getElementsByClassName("letter-row")[newActive]
+    let cols = document.getElementsByClassName("col-6")
+    // for each col
+    for (let i = 0; i < cols.length; i++) {
+        let oldRow = cols[i].children[active_guess]
+        let newRow = cols[i].children[newActive]
 
-    oldRow.classList.remove("active-row")
-    newRow.classList.add("active-row")
-
+        oldRow.classList.remove("active-row")
+        newRow.classList.add("active-row")
+    }
     active_guess = newActive;
 }
 
@@ -227,10 +284,7 @@ document.getElementById("keyboard-cont").addEventListener("click", (e) => {
     if (key === "Del") {
         key = "Backspace"
     }
-    else if (key === "Up") {
-        key = "ArrowUp"
-    }
-    else if (key === "Down") {
+    else if (key === "Next") {
         key = "ArrowDown"
     }
 
