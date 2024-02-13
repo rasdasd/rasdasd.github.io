@@ -4,4 +4,6 @@
 
 [Soundboard](https://rasdasd.github.io/soundboard)
 
+[Word Cycle](http://rasdasd.github.io/cycle)
+
 [LIVE SITE](https://rasdasd.github.io)
