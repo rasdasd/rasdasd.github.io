@@ -16,6 +16,22 @@ h1 {
 
 }
 
+.clue-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+}
+
+.active-box {
+    background-color: lightyellow !important;
+}
+
+.active-row {
+    background-color: lightgray;
+}
+
+
 .letter-box {
     border: 2px solid gray;
     border-radius: 3px;
@@ -72,4 +88,58 @@ h1 {
     text-align: center;
     text-decoration: none;
     display: inline-block;
+}
+
+
+.tooltip-icon {
+    display: inline-block;
+    width: 20px;
+    /* Set the width of the icon */
+    height: 20px;
+    /* Set the height of the icon */
+    margin-left: 8px;
+    /* Adjust the spacing between the icon and the letter row */
+    cursor: default;
+    /* Change cursor to default on hover */
+    background-image: url('info.svg');
+    /* Set SVG as background image */
+    background-size: cover;
+    /* Ensure the SVG fills the icon */
+}
+
+.tooltip-icon:hover::before {
+    content: attr(title);
+    /* Display the tooltip text */
+    position: absolute;
+    background-color: #333;
+    /* Background color of the tooltip */
+    color: #fff;
+    /* Text color of the tooltip */
+    padding: 5px;
+    /* Padding of the tooltip */
+    border-radius: 5px;
+    /* Border radius of the tooltip */
+    font-size: 14px;
+    /* Font size of the tooltip */
+    white-space: nowrap;
+    /* Prevent tooltip from wrapping */
+    z-index: 1;
+    /* Ensure tooltip is above other elements */
+    /* Adjust the position of the tooltip */
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tooltip-icon:hover::before,
+.tooltip-icon:focus::before {
+    opacity: 1;
+    /* Show tooltip on hover or focus */
+}
+
+.show-tooltip::before {
+    opacity: 1;
+    /* Show tooltip */
 }

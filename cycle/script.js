@@ -1,8 +1,10 @@
 import { CYCLE } from "./cycles.js";
 
 let currentCycle = CYCLE[0];
-let words = currentCycle[0];
-let clues = currentCycle[1];
+let words = currentCycle.cycle;
+let clues = currentCycle.clues;
+let sources = currentCycle.sources;
+let scores = currentCycle.scores;
 const CYCLE_LENGTH = words.length;
 const WORD_LENGTH = words[0].length;
 let guesses = [];
@@ -34,24 +36,83 @@ function initBoard() {
         }
         col1.appendChild(row)
 
-
+        let cluewrapper = document.createElement("div");
+        cluewrapper.className = "clue-wrapper"
         let clue = document.createElement("div")
         clue.className = "clue"
         clue.textContent = clues[i]
-        col2.appendChild(clue)
+        cluewrapper.appendChild(clue)
+
+        // Create a tooltip icon
+        let tooltipIcon = document.createElement("span");
+        tooltipIcon.className = "tooltip-icon";
+        tooltipIcon.title = sources[i] + " - " + scores[i];
+        cluewrapper.appendChild(tooltipIcon)
+
+        col2.appendChild(cluewrapper)
+
 
 
     }
+
+    // Add event listeners to display clues on hover or touch
+    document.querySelectorAll(".clue-wrapper").forEach(row => {
+        row.addEventListener("mouseenter", displayInfo);
+        row.addEventListener("mouseleave", hideInfo);
+        row.addEventListener("touchstart", displayInfo);
+        row.addEventListener("touchend", hideInfo);
+    });
+
+
+    changeActiveGuess(active_guess);
+    updateActiveCell();
+}
+
+// Function to display clues on hover or touch
+function displayInfo(event) {
+    let tooltip = event.target;
+    if (tooltip.tagName !== "SPAN") {
+        tooltip = tooltip.querySelector("span.tooltip-icon");
+    }
+    if (tooltip) {
+        tooltip.classList.add("show-tooltip");
+    }
+}
+
+function hideInfo(event) {
+    let tooltip = event.target;
+    if (tooltip.tagName !== "SPAN") {
+        tooltip = tooltip.querySelector("span.tooltip-icon");
+    }
+    if (tooltip) {
+        tooltip.classList.remove("show-tooltip");
+    }
+}
+
+function updateActiveCell() {
+    // for each row, for each box, remove active-box
+    let rows = document.getElementsByClassName("letter-row")
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        let boxes = rows[i].children
+        for (let j = 0; j < WORD_LENGTH; j++) {
+            boxes[j].classList.remove("active-box")
+            // add active-box to the active cell
+            if (i === active_guess && j === Math.min(guesses[active_guess].length, WORD_LENGTH - 1)) {
+                boxes[j].classList.add("active-box")
+            }
+        }
+    }
+
 }
 
 function changeActiveGuess(newActive) {
     let oldRow = document.getElementsByClassName("letter-row")[active_guess]
     let newRow = document.getElementsByClassName("letter-row")[newActive]
 
-    oldRow.style.backgroundColor = "white"
-    newRow.style.backgroundColor = "lightgrey"
+    oldRow.classList.remove("active-row")
+    newRow.classList.add("active-row")
 
-    active_guess = newActive
+    active_guess = newActive;
 }
 
 function nextGuess() {
@@ -131,22 +192,26 @@ document.addEventListener("keyup", (e) => {
     let pressedKey = String(e.key);
     if (pressedKey === "Backspace" && guesses[active_guess].length !== 0) {
         deleteLetter();
+        updateActiveCell();
         return;
     }
 
     if (pressedKey === "ArrowUp") {
         prevGuess();
+        updateActiveCell();
         return;
     }
     if (pressedKey === "ArrowDown") {
         nextGuess();
+        updateActiveCell();
         return;
     }
     let found = pressedKey.match(/[a-z]/gi)
     if (!found || found.length > 1) {
-        return
+        return;
     } else {
         insertLetter(pressedKey)
+        updateActiveCell();
     }
     checkGuesses();
 })
