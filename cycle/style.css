@@ -55,7 +55,7 @@ h1 {
 }
 
 .clue {
-    margin: 1rem 0;
+    margin: 0 0.5rem;
     font-size: 1rem;
     font-weight: 700;
     pointer-events: none;
@@ -98,7 +98,8 @@ h1 {
     /* Set the width of the icon */
     height: 20px;
     /* Set the height of the icon */
-    margin-left: 8px;
+    margin-left: 4px;
+    margin-right: 4px;
     /* Adjust the spacing between the icon and the letter row */
     cursor: default;
     /* Change cursor to default on hover */
@@ -143,4 +144,137 @@ h1 {
 .show-tooltip::before {
     opacity: 1;
     /* Show tooltip */
+}
+
+
+/* Media queries for smallest screens */
+@media only screen and (max-width: 325px) {
+    .clue-wrapper {
+        height: 1.5rem;
+    }
+
+    .letter-box {
+        font-size: 1rem;
+        height: 1rem;
+        width: 1rem;
+    }
+
+    .clue {
+        font-size: 0.5rem;
+    }
+
+    .keyboard-button {
+        font-size: 0.75rem;
+        padding: 0.25rem;
+    }
+}
+
+/* Media queries for smaller screens */
+@media only screen and (max-width: 400px) and (min-width: 325px) {
+    .clue-wrapper {
+        height: 2rem;
+    }
+
+    .letter-box {
+        font-size: 1.5rem;
+        height: 1.5rem;
+        width: 1.5rem;
+    }
+
+    .clue {
+        font-size: 1rem;
+    }
+
+    .keyboard-button {
+        font-size: 1rem;
+        padding: 0.35rem;
+    }
+}
+
+/* Media queries for small screens */
+@media only screen and (max-width: 600px) and (min-width: 400px) {
+    .clue-wrapper {
+        height: 2.5rem;
+    }
+
+    .letter-box {
+        font-size: 2rem;
+        height: 2rem;
+        width: 2rem;
+    }
+
+    .clue {
+        font-size: 1.25rem;
+    }
+
+    .keyboard-button {
+        font-size: 1.25rem;
+        padding: 0.5rem;
+    }
+}
+
+/* Media queries for medium screens */
+@media only screen and (max-width: 800px) and (min-width: 600px) {
+    .clue-wrapper {
+        height: 3rem;
+    }
+
+    .letter-box {
+        font-size: 2.5rem;
+        height: 2.5rem;
+        width: 2.5rem;
+    }
+
+    .clue {
+        font-size: 1.5rem;
+    }
+
+    .keyboard-button {
+        font-size: 1.5rem;
+        padding: 0.75rem;
+    }
+}
+
+/* Media queries for large screens */
+@media only screen and (min-width: 800px) and (max-width: 1200px) {
+    .clue-wrapper {
+        height: 3.5rem;
+    }
+
+    .letter-box {
+        font-size: 3rem;
+        height: 3rem;
+        width: 3rem;
+    }
+
+    .clue {
+        font-size: 2rem;
+    }
+
+    .keyboard-button {
+        font-size: 2rem;
+        padding: 1rem;
+    }
+}
+
+/* Media queries for largest screens */
+@media only screen and (min-width: 1200px) {
+    .clue-wrapper {
+        height: 4rem;
+    }
+
+    .letter-box {
+        font-size: 3.5rem;
+        height: 3.5rem;
+        width: 3.5rem;
+    }
+
+    .clue {
+        font-size: 2.5rem;
+    }
+
+    .keyboard-button {
+        font-size: 2.5rem;
+        padding: 1.25rem;
+    }
 }
