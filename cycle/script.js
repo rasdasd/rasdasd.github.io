@@ -208,7 +208,7 @@ function insertLetter(pressedKey) {
     if (guesses[active_guess].length === WORD_LENGTH) {
         return
     }
-    pressedKey = pressedKey.toLowerCase()
+    pressedKey = pressedKey.toUpperCase()
 
     let row = document.getElementsByClassName("letter-row")[active_guess]
     let box = row.children[guesses[active_guess].length]
