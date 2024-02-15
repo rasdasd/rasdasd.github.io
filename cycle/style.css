@@ -1,5 +1,6 @@
 :root {
     --w-scale: 5vw;
+    --max-width: 75px;
 }
 
 .title-header {
@@ -59,7 +60,7 @@ h1 {
     align-items: center;
     height: var(--w-scale);
     margin: 4px 0;
-    max-height: 75px;
+    max-height: var(--max-width);
 }
 
 .active-box {
@@ -84,8 +85,8 @@ h1 {
     align-items: center;
     text-transform: uppercase;
     pointer-events: none;
-    max-width: 100px;
-    max-height: 100px;
+    max-width: var(--max-width);
+    max-height: var(--max-width);
 }
 
 .filled-box {
