@@ -33,14 +33,16 @@ let solved = false;
 let init = false;
 
 function convertScoreToCommon(score) {
-    if (score >= 45) {
+    if (score >= 48) {
         return "Common"
-    } else if (score >= 35) {
+    } else if (score >= 42) {
         return "Uncommon"
-    } else if (score >= 25) {
+    } else if (score >= 35) {
         return "Rare"
-    } else if (score >= 3) {
+    } else if (score >= 25) {
         return "Very Rare"
+    } else if (score >= 3) {
+        return "Extremely Rare"
     } else if (score >= 2) {
         return "Ultra Rare"
     } else {
