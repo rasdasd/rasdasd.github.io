@@ -59,7 +59,7 @@ h1 {
     align-items: center;
     height: var(--w-scale);
     margin: 4px 0;
-    max-height: 100px;
+    max-height: 75px;
 }
 
 .active-box {
