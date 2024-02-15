@@ -76,7 +76,7 @@ h1 {
     border: 2px solid gray;
     border-radius: 3px;
     margin: 2px;
-    font-size: var(--w-scale);
+    font-size: min(85px, var(--w-scale));
     font-weight: 700;
     height: var(--w-scale);
     width: var(--w-scale);
@@ -96,7 +96,7 @@ h1 {
 
 .clue {
     margin: 4px 0.5rem;
-    font-size: calc(var(--w-scale) * 0.5);
+    font-size: calc(min(85px, var(--w-scale)) * 0.5);
     font-weight: 700;
     pointer-events: none;
 }
