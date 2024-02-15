@@ -1,5 +1,44 @@
+:root {
+    --w-scale: 5vw;
+}
+
+.title-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-button {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0 0.5rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: lightgray;
+    border: solid black 1px;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    width: 12.5%
+}
+
 h1 {
     text-align: center;
+    font-size: 3rem;
+    width: 75%;
+}
+
+#date {
+    font-size: 2rem;
+    text-align: center;
+    width: 100%;
+    margin: 0;
 }
 
 #game-board {
@@ -18,7 +57,9 @@ h1 {
     display: flex;
     flex-direction: row;
     align-items: center;
-    height: 2.5rem;
+    height: var(--w-scale);
+    margin: 4px 0;
+    max-height: 100px;
 }
 
 .active-box {
@@ -34,15 +75,17 @@ h1 {
     border: 2px solid gray;
     border-radius: 3px;
     margin: 2px;
-    font-size: 2rem;
+    font-size: var(--w-scale);
     font-weight: 700;
-    height: 2rem;
-    width: 2rem;
+    height: var(--w-scale);
+    width: var(--w-scale);
     display: flex;
     justify-content: center;
     align-items: center;
     text-transform: uppercase;
     pointer-events: none;
+    max-width: 100px;
+    max-height: 100px;
 }
 
 .filled-box {
@@ -50,19 +93,16 @@ h1 {
     pointer-events: none;
 }
 
-.letter-row {
-    display: flex;
-}
-
 .clue {
-    margin: 0 0.5rem;
-    font-size: 1rem;
+    margin: 4px 0.5rem;
+    font-size: calc(var(--w-scale) * 0.5);
     font-weight: 700;
     pointer-events: none;
 }
 
 #keyboard-cont {
-    margin: 1rem 0;
+    margin-top: 20px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -70,25 +110,47 @@ h1 {
 
 #keyboard-cont div {
     display: flex;
+    width: 100%;
+    justify-content: center;
 }
 
-.second-row {
-    margin: 0.5rem 0;
+.keyboard-button.aux-button {
+    /* flex: 2; */
+    font-size: 1em;
+    max-width: 118px;
 }
 
 .keyboard-button {
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 0 2px;
+    font-size: 1.25em;
+    /* adjusted for consistency with new setup */
+    font-weight: bold;
+    /* adjusted for consistency with new setup */
+    margin: 0 6px 8px 0;
+    /* adjusted margin for better spacing */
+    height: 58px;
+    /* adjusted for consistency with new setup */
+    border-radius: 4px;
+    /* adjusted for consistency with new setup */
     cursor: pointer;
-    text-transform: uppercase;
     background-color: lightgray;
     border: solid black 1px;
     color: black;
     padding: 0.5rem;
     text-align: center;
     text-decoration: none;
-    display: inline-block;
+    display: flex;
+    /* adjusted for centering content */
+    justify-content: center;
+    /* adjusted for centering content */
+    align-items: center;
+    /* adjusted for centering content */
+    text-transform: uppercase;
+    flex: 1;
+    /* adjusted for flexible sizing */
+    /* https://stackoverflow.com/questions/46167604/ios-html-disable-double-tap-to-zoom */
+    touch-action: manipulation;
+    max-width: 75px;
+    min-width: 20px;
 }
 
 
@@ -147,134 +209,53 @@ h1 {
 }
 
 
-/* Media queries for smallest screens */
-@media only screen and (max-width: 325px) {
-    .clue-wrapper {
-        height: 1.5rem;
-    }
-
-    .letter-box {
-        font-size: 1rem;
-        height: 1rem;
-        width: 1rem;
-    }
-
-    .clue {
-        font-size: 0.5rem;
-    }
-
-    .keyboard-button {
-        font-size: 0.75rem;
-        padding: 0.25rem;
-    }
-}
-
 /* Media queries for smaller screens */
-@media only screen and (max-width: 400px) and (min-width: 325px) {
-    .clue-wrapper {
-        height: 2rem;
-    }
-
-    .letter-box {
-        font-size: 1.5rem;
-        height: 1.5rem;
-        width: 1.5rem;
-    }
-
-    .clue {
-        font-size: 1rem;
-    }
-
-    .keyboard-button {
-        font-size: 1rem;
-        padding: 0.35rem;
-    }
-}
-
-/* Media queries for small screens */
-@media only screen and (max-width: 600px) and (min-width: 400px) {
-    .clue-wrapper {
-        height: 2.5rem;
-    }
-
-    .letter-box {
+@media only screen and (max-width: 450px) and (min-width: 0px) {
+    h1 {
         font-size: 2rem;
-        height: 2rem;
-        width: 2rem;
     }
 
-    .clue {
+    #date {
+        font-size: 1.5rem;
+    }
+
+
+    .clue-wrapper {
+        height: 1.75rem;
+    }
+
+    .letter-box {
         font-size: 1.25rem;
+        height: 1.25rem;
+        width: 1.25rem;
+        margin: 2px 0.5px;
     }
 
-    .keyboard-button {
-        font-size: 1.25rem;
-        padding: 0.5rem;
-    }
-}
-
-/* Media queries for medium screens */
-@media only screen and (max-width: 800px) and (min-width: 600px) {
-    .clue-wrapper {
-        height: 3rem;
-    }
-
-    .letter-box {
-        font-size: 2.5rem;
-        height: 2.5rem;
-        width: 2.5rem;
+    .tooltip-icon {
+        width: 16px;
+        height: 16px;
     }
 
     .clue {
-        font-size: 1.5rem;
+        font-size: 0.75rem;
+        line-height: 0.75rem;
     }
 
     .keyboard-button {
-        font-size: 1.5rem;
-        padding: 0.75rem;
-    }
-}
-
-/* Media queries for large screens */
-@media only screen and (min-width: 800px) and (max-width: 1200px) {
-    .clue-wrapper {
-        height: 3.5rem;
+        font-size: 1rem;
+        padding: 0.15rem;
+        margin: 0 3px 3px 0;
     }
 
-    .letter-box {
-        font-size: 3rem;
-        height: 3rem;
-        width: 3rem;
+    #keyboard-cont {
+        position: fixed;
+        bottom: 0;
+        left: 1vw;
+        width: 98vw;
     }
 
-    .clue {
-        font-size: 2rem;
+    .keyboard-button.aux-button {
+        font-size: 0.6em;
     }
 
-    .keyboard-button {
-        font-size: 2rem;
-        padding: 1rem;
-    }
-}
-
-/* Media queries for largest screens */
-@media only screen and (min-width: 1200px) {
-    .clue-wrapper {
-        height: 4rem;
-    }
-
-    .letter-box {
-        font-size: 3.5rem;
-        height: 3.5rem;
-        width: 3.5rem;
-    }
-
-    .clue {
-        font-size: 2.5rem;
-    }
-
-    .keyboard-button {
-        font-size: 2.5rem;
-        padding: 1.25rem;
-    }
 }

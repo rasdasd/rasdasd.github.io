@@ -1,20 +1,36 @@
 import { CYCLE } from "./cycles.js";
 
-let currentCycle = CYCLE[0];
+const START_DATE = new Date("2024-01-01 00:00:00");
+const MIN_DELTA = 0;
+const MAX_DELTA = CYCLE.length - 1;
+const DAY = 1000 * 60 * 60 * 24;
+const date_display_options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+};
+
+let curr_date = new Date();
+let day_delta = Math.floor((curr_date - START_DATE) / DAY);
+day_delta = Math.max(MIN_DELTA, Math.min(MAX_DELTA, day_delta));
+
+let INDEX = day_delta;
+let currentCycle = CYCLE[INDEX];
 let words = currentCycle.cycle;
 let clues = currentCycle.clues;
 let sources = currentCycle.sources;
 let scores = currentCycle.scores;
-const CYCLE_LENGTH = words.length;
-const WORD_LENGTH = words[0].length;
+let years = currentCycle.years;
+let CYCLE_LENGTH = words.length;
+let WORD_LENGTH = words[0].length;
 let guesses = [];
 for (let i = 0; i < CYCLE_LENGTH; i++) {
     guesses.push([]);
 }
 let active_guess = 0;
 let solved = false;
-
-console.log(currentCycle);
+let init = false;
 
 function convertScoreToCommon(score) {
     if (score >= 45) {
@@ -32,12 +48,45 @@ function convertScoreToCommon(score) {
     }
 }
 
-function initBoard() {
+function initBoard(index) {
+    init = false;
+    /* INIT DATA */
+    INDEX = index;
+    currentCycle = CYCLE[INDEX];
+    words = currentCycle.cycle;
+    clues = currentCycle.clues;
+    sources = currentCycle.sources;
+    scores = currentCycle.scores;
+    years = currentCycle.years;
+    CYCLE_LENGTH = words.length;
+    WORD_LENGTH = words[0].length;
+    guesses = [];
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        guesses.push([]);
+    }
+    active_guess = 0;
+    solved = false;
+
+    console.log(currentCycle);
+
+    /* INIT BOARD */
+
+    let dateDiv = document.getElementById("date");
+    dateDiv.textContent = new Date(START_DATE.getTime() + index * DAY).toLocaleDateString(undefined, date_display_options);
+
+
     let board = document.getElementById("game-board");
+    /* remove all eleemnts from board */
+    while (board.firstChild) {
+        board.removeChild(board.firstChild);
+    }
+
     let col1 = document.createElement("div");
     col1.className = "col-6";
+    col1.classList.add("touchable-col");
     let col2 = document.createElement("div");
     col2.className = "col-6";
+    col2.classList.add("touchable-col");
     board.appendChild(col1);
     board.appendChild(col2);
     let col3 = document.createElement("div");
@@ -46,7 +95,8 @@ function initBoard() {
 
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         let row = document.createElement("div")
-        row.className = "letter-row"
+        row.className = "clue-wrapper"
+        row.classList.add("letter-row");
 
         for (let j = 0; j < WORD_LENGTH; j++) {
             let box = document.createElement("div")
@@ -65,9 +115,10 @@ function initBoard() {
         // Create a tooltip icon
         let cluewrapper2 = document.createElement("div");
         cluewrapper2.className = "clue-wrapper"
+        cluewrapper2.classList.add("tooltip-wrapper");
         let tooltipIcon = document.createElement("span");
         tooltipIcon.className = "tooltip-icon";
-        tooltipIcon.title = sources[i] + "<br>" + convertScoreToCommon(scores[i]);
+        tooltipIcon.title = sources[i] + " - " + years[i] + " - " + convertScoreToCommon(scores[i]);
         cluewrapper2.appendChild(tooltipIcon)
 
         col2.appendChild(cluewrapper)
@@ -78,7 +129,7 @@ function initBoard() {
     }
 
     // Add event listeners to display clues on hover or touch
-    document.querySelectorAll(".clue-wrapper").forEach(row => {
+    document.querySelectorAll(".tooltip-wrapper").forEach(row => {
         row.addEventListener("mouseenter", displayInfo);
         row.addEventListener("mouseleave", hideInfo);
         row.addEventListener("touchstart", displayInfo);
@@ -86,7 +137,7 @@ function initBoard() {
     });
 
     // on mouseclick or touch, change the active guess
-    document.querySelectorAll(".clue-wrapper, .letter-row").forEach(row => {
+    document.querySelectorAll(".clue-wrapper").forEach(row => {
         row.addEventListener("click", changeActiveGuessOnClick);
         row.addEventListener("touchstart", changeActiveGuessOnClick);
     });
@@ -94,6 +145,7 @@ function initBoard() {
 
     changeActiveGuess(active_guess);
     updateActiveCell();
+    init = true;
 }
 
 // Function to display clues on hover or touch
@@ -102,10 +154,8 @@ function displayInfo(event) {
     if (tooltip.tagName !== "SPAN") {
         tooltip = tooltip.querySelector("span.tooltip-icon");
     }
-    if (tooltip) {
-        tooltip.classList.add("show-tooltip");
-    }
-    toastr.info(tooltip.title, "Source");
+
+    toastr.info(tooltip.title.replaceAll(" - ", "<br>"), "Source");
 }
 
 function hideInfo(event) {
@@ -124,23 +174,18 @@ function changeActiveGuessOnClick(event) {
     if (clue.tagName !== "DIV") {
         clue = clue.parentElement;
     }
-    let clues = document.getElementsByClassName("clue-wrapper");
-    for (let i = 0; i < CYCLE_LENGTH; i++) {
-        if (clues[i] === clue) {
-            changeActiveGuess(i);
-            updateActiveCell();
-            return;
+    let cols = document.getElementsByClassName("touchable-col")
+    for (let i = 0; i < cols.length; i++) {
+        let col = cols[i]
+        let clues = col.getElementsByClassName("clue-wrapper");
+        for (let i = 0; i < CYCLE_LENGTH; i++) {
+            if (clues[i] === clue) {
+                changeActiveGuess(i);
+                updateActiveCell();
+                return;
+            }
         }
     }
-    let rows = document.getElementsByClassName("letter-row");
-    for (let i = 0; i < CYCLE_LENGTH; i++) {
-        if (rows[i] === clue) {
-            changeActiveGuess(i);
-            updateActiveCell();
-            return;
-        }
-    }
-
 }
 
 function updateActiveCell() {
@@ -242,6 +287,9 @@ const animateCSS = (element, animation, prefix = 'animate__') =>
     });
 
 document.addEventListener("keyup", (e) => {
+    if (!init) {
+        return
+    }
     if (solved) {
         return
     }
@@ -271,7 +319,7 @@ document.addEventListener("keyup", (e) => {
         updateActiveCell();
     }
     checkGuesses();
-})
+});
 
 document.getElementById("keyboard-cont").addEventListener("click", (e) => {
     const target = e.target;
@@ -289,7 +337,34 @@ document.getElementById("keyboard-cont").addEventListener("click", (e) => {
     }
 
     document.dispatchEvent(new KeyboardEvent("keyup", { 'key': key }))
-})
+});
 
 
-initBoard()
+function decrementIndex() {
+    let prevIndex = INDEX;
+    INDEX = Math.max(MIN_DELTA, INDEX - 1);
+    if (INDEX === prevIndex) {
+        return
+    }
+    initBoard(INDEX);
+}
+function incrementIndex() {
+    let prevIndex = INDEX;
+    INDEX = Math.min(MAX_DELTA, INDEX + 1);
+    if (INDEX === prevIndex) {
+        return
+    }
+    initBoard(INDEX);
+}
+
+initBoard(INDEX)
+
+/* implement prev-button */
+document.getElementById("prev-button").addEventListener("click", (e) => {
+    decrementIndex();
+});
+
+/* implement next-button */
+document.getElementById("next-button").addEventListener("click", (e) => {
+    incrementIndex();
+});
