@@ -581,6 +581,14 @@ function showSettings() {
         </div>`;
     }
 
+    // reset cookie data
+    settingsHTML += `
+    <div class="setting">
+        <span>Reset Progress</span>
+        <button id="reset-button" style="padding: 2rem; margin: 1rem; background-color: red; color: white; border: none; border-radius: 0.5rem; font-size: 2rem;">Reset</button>
+    </div>`;
+
+
     Dialog.fire({
         title: "Settings",
         html: settingsHTML,
@@ -592,6 +600,22 @@ function showSettings() {
                     updateSetting(setting, e.target.checked);
                 });
             }
+            document.querySelector("#reset-button").addEventListener("click", (e) => {
+                Dialog.fire({
+                    title: "Reset Progress",
+                    text: "Are you sure you want to reset your progress? This will refresh the page!",
+                    icon: "error",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                    cancelButtonText: "No",
+                    confirmButtonColor: "red",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Cookies.remove('data')
+                        location.reload();
+                    }
+                });
+            });
         }
     });
 }
