@@ -1,5 +1,10 @@
 import { CYCLE } from "./cycles.js";
 const DEFAULT_COOKIE_DATA = {
+    "version": "1.0.0",
+    "settings": {
+        "virtual_keyboard_input_only": false,
+        "dark_mode": false,
+    },
     "guesses": {},
     "solved": {},
 }
@@ -52,6 +57,10 @@ function readCookieData() {
     } else {
         data = JSON.parse(data);
     }
+    if (data.settings === undefined) {
+        data.settings = DEFAULT_COOKIE_DATA.settings;
+    }
+    data.version = DEFAULT_COOKIE_DATA.version;
     return data;
 }
 
@@ -191,9 +200,6 @@ const Toast = Swal.mixin({
     showConfirmButton: false,
     timer: 3000,
     timerProgressBar: true,
-    customClass: {
-        popup: "colored-toast"
-    },
     didOpen: (toast) => {
         toast.onmouseenter = Swal.stopTimer;
         toast.onmouseleave = Swal.resumeTimer;
@@ -211,6 +217,9 @@ function displayInfo(event) {
         // title: "Source",
         html: `${parts[0]} - ${parts[1]}<br>${parts[2]}`,
         // icon: "info"
+        customClass: {
+            popup: "colored-toast"
+        },
         iconHtml: `<img class="toast-icon" src="./assets/${parts[0]}.svg" onerror="this.src='./assets/fallback.svg';">`,
     });
 }
@@ -362,6 +371,9 @@ document.addEventListener("keyup", (e) => {
     if (solved) {
         return
     }
+    if (COOKIE_DATA.settings.virtual_keyboard_input_only && e.code != "virtual") {
+        return;
+    }
 
     let pressedKey = String(e.key);
     if (pressedKey === "Backspace" && guesses[active_guess].length !== 0) {
@@ -405,7 +417,7 @@ document.getElementById("keyboard-cont").addEventListener("click", (e) => {
         key = "ArrowDown"
     }
 
-    document.dispatchEvent(new KeyboardEvent("keyup", { 'key': key }))
+    document.dispatchEvent(new KeyboardEvent("keyup", { 'key': key, 'code': "virtual" }));
 });
 
 
@@ -441,6 +453,141 @@ function onWin() {
 
 initBoard(INDEX)
 
+
+
+const Dialog = Swal.mixin({
+    position: "center",
+    showCloseButton: true,
+});
+
+function showHowToPlay() {
+    // show a welcome message, and have the confirmation button be a share button
+    Dialog.fire({
+        title: "Welcome to the game!",
+        html: `This is a game of <b>Word Cycles</b>. The goal is to guess the word in each cycle. Use the keyboard to enter letters. Use the arrows to navigate between cycles. The game will automatically save your progress. Good luck!`,
+        icon: "question",
+        confirmButtonText: "Share",
+        preConfirm: async () => {
+            // copy link to clipboard
+            navigator.clipboard.writeText(window.location.href);
+            Swal.showValidationMessage(
+                "Link copied to clipboard"
+            );
+            return false;
+        }
+    });
+}
+
+function showStats() {
+    // track the following
+    // total played
+    // win %
+    // current streak
+    // max streak
+
+    let totalPlayed = 0;
+    let wins = 0;
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let streak = 0;
+    for (let i = 0; i < CYCLE.length; i++) {
+        if (COOKIE_DATA.solved[i]) {
+            wins++;
+            streak++;
+        } else {
+            streak = 0;
+        }
+        if (streak > maxStreak) {
+            maxStreak = streak;
+        }
+        totalPlayed++;
+    }
+    let winPercent = (wins / totalPlayed * 100).toFixed(2);
+    Dialog.fire({
+        title: "Stats",
+        html: `You have played <b>${totalPlayed}</b> cycles.<br>
+        You have won <b>${wins}</b> cycles.<br>
+        Your win percentage is <b>${winPercent}%</b>.<br>
+        Your current streak is <b>${streak}</b>.<br>
+        Your max streak is <b>${maxStreak}</b>.`,
+        icon: "info",
+    });
+}
+
+function updateSetting(setting, value) {
+    COOKIE_DATA.settings[setting] = value;
+    setCookieData();
+    if (setting === "dark_mode") {
+        update_dark_mode();
+    }
+}
+
+function update_dark_mode() {
+    if (COOKIE_DATA.settings.dark_mode) {
+        document.body.classList.add("dark-mode");
+    } else {
+        document.body.classList.remove("dark-mode");
+    }
+}
+
+function showSettings() {
+    // settings include
+    // on screen keyboard input only
+    // dark mode
+    // reset progress
+
+    // settings html
+    // for each setting in setting
+    // create a div with a label and a toggle switch
+    // add an event listener to the switch
+    // on change, update the cookie data and the settings
+    /* EXAMPLE TOGGLE
+    <label class="switch">
+        <input type="checkbox">
+        <span class="slider round"></span>
+    </label>
+    */
+    let settings = COOKIE_DATA.settings;
+    let settingsHTML = "";
+    // ensure each setting has its own row
+    // ensure that if checkbox is checked, we update settings
+    for (let setting in settings) {
+        let label = setting.split("_").map(x => x.charAt(0).toUpperCase() + x.slice(1)).join(" ");
+        settingsHTML += `
+        <div class="setting">
+            <span>${label}</span>
+            <label class="switch">
+                <input type="checkbox" id="${setting}" ${settings[setting] ? "checked" : ""}>
+                <span class="slider round"></span>
+            </label>
+        </div>`;
+    }
+
+    Dialog.fire({
+        title: "Settings",
+        html: settingsHTML,
+        icon: "info",
+        didOpen: () => {
+            for (let setting in settings) {
+                let input = document.getElementById(setting);
+                input.addEventListener("change", (e) => {
+                    updateSetting(setting, e.target.checked);
+                });
+            }
+        }
+    });
+}
+
+update_dark_mode();
+
+// if there are no solved cycles, show how to play
+// solved is a dictionary of index to solved status
+
+if (Object.values(COOKIE_DATA.solved).every(x => x === false)) {
+    showHowToPlay();
+}
+
+
 /* implement prev-button */
 document.getElementById("prev-button").addEventListener("click", (e) => {
     decrementIndex();
@@ -449,4 +596,19 @@ document.getElementById("prev-button").addEventListener("click", (e) => {
 /* implement next-button */
 document.getElementById("next-button").addEventListener("click", (e) => {
     incrementIndex();
+});
+
+/* implement settings-button */
+document.getElementById("settings-button").addEventListener("click", (e) => {
+    showSettings();
+});
+
+/* implement stats-button */
+document.getElementById("stats-button").addEventListener("click", (e) => {
+    showStats();
+});
+
+/* implement help-button */
+document.getElementById("help-button").addEventListener("click", (e) => {
+    showHowToPlay();
 });
