@@ -1,6 +1,7 @@
 :root {
     --w-scale: 5vw;
     --max-width: 75px;
+    --info-color: hwb(195 83% 3%);
 }
 
 .title-header {
@@ -26,14 +27,37 @@
     justify-content: center;
     align-items: center;
     text-transform: uppercase;
-    width: 12.5%
+    flex: 0 0 10%;
 }
 
 h1 {
     text-align: center;
     font-size: 3rem;
-    width: 75%;
+    flex-grow: 1;
 }
+
+.subtitle-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 0.5rem 0;
+
+}
+
+.small-button-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.small-button {
+    font-size: 1.25rem;
+    padding: 1px;
+    margin: 2px;
+}
+
 
 #date {
     font-size: 2rem;
@@ -209,6 +233,20 @@ h1 {
     /* Show tooltip */
 }
 
+.colored-toast {
+    background-color: var(--info-color) !important;
+}
+
+.toast-icon {
+    width: 1.75em;
+    height: 1.75em;
+}
+
+/* selector for parent of .toast-icon */
+.swal2-icon-show:has(.toast-icon) {
+    border: 0;
+}
+
 
 /* Media queries for smaller screens */
 @media only screen and (max-width: 450px) and (min-width: 0px) {
@@ -257,6 +295,12 @@ h1 {
 
     .keyboard-button.aux-button {
         font-size: 0.6em;
+    }
+
+    .small-button {
+        font-size: 1rem;
+        padding: 0px;
+        margin: 1px;
     }
 
 }

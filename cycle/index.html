@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Cycle</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
 
@@ -15,11 +14,18 @@
     <div class="title-header">
         <!-- insert previous -->
         <button class="nav-button prev-button" id="prev-button">⇦</button>
-        <h1> Word Cycle </h1>
+        <h1> Word Cycle </h1>        
         <!-- insert next -->
         <button class="nav-button next-button" id="next-button">⇨</button>
     </div>
-    <h2 id="date"></h1>
+    <div class="subtitle-wrapper">
+        <h2 id="date"></h2>
+        <div class="small-button-wrapper">
+            <button class="small-button" id="help-button">❓</button>
+            <button class="small-button" id="stats-button">📊</button>
+            <button class="small-button" id="settings-button">⚙️</button>
+        </div>
+    </div>
 
     <div id="game-board">
 
@@ -64,7 +70,8 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js" type="module"></script>
 </body>
 

@@ -1,19 +1,24 @@
 import { CYCLE } from "./cycles.js";
-
+const DEFAULT_COOKIE_DATA = {
+    "guesses": {},
+    "solved": {},
+}
 const START_DATE = new Date("2024-01-01 00:00:00");
 const MIN_DELTA = 0;
 const MAX_DELTA = CYCLE.length - 1;
 const DAY = 1000 * 60 * 60 * 24;
 const date_display_options = {
-    weekday: 'long',
+    weekday: 'short',
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
 };
 
 let curr_date = new Date();
 let day_delta = Math.floor((curr_date - START_DATE) / DAY);
 day_delta = Math.max(MIN_DELTA, Math.min(MAX_DELTA, day_delta));
+
+const COOKIE_DATA = readCookieData();
 
 let INDEX = day_delta;
 let currentCycle = CYCLE[INDEX];
@@ -24,13 +29,35 @@ let scores = currentCycle.scores;
 let years = currentCycle.years;
 let CYCLE_LENGTH = words.length;
 let WORD_LENGTH = words[0].length;
-let guesses = [];
-for (let i = 0; i < CYCLE_LENGTH; i++) {
-    guesses.push([]);
+if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
+    COOKIE_DATA.guesses[INDEX] = [];
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        COOKIE_DATA.guesses[INDEX].push([]);
+    }
 }
+let guesses = COOKIE_DATA.guesses[INDEX];
 let active_guess = 0;
-let solved = false;
+if (!COOKIE_DATA.solved.hasOwnProperty(INDEX)) {
+    COOKIE_DATA.solved[INDEX] = false;
+}
+let solved = COOKIE_DATA.solved[INDEX];
+
+setCookieData();
 let init = false;
+
+function readCookieData() {
+    let data = Cookies.get("data");
+    if (data === undefined) {
+        data = DEFAULT_COOKIE_DATA;
+    } else {
+        data = JSON.parse(data);
+    }
+    return data;
+}
+
+function setCookieData() {
+    Cookies.set("data", JSON.stringify(COOKIE_DATA), { expires: 367 });
+}
 
 function convertScoreToCommon(score) {
     if (score >= 48) {
@@ -62,14 +89,20 @@ function initBoard(index) {
     years = currentCycle.years;
     CYCLE_LENGTH = words.length;
     WORD_LENGTH = words[0].length;
-    guesses = [];
-    for (let i = 0; i < CYCLE_LENGTH; i++) {
-        guesses.push([]);
+    if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
+        COOKIE_DATA.guesses[INDEX] = [];
+        for (let i = 0; i < CYCLE_LENGTH; i++) {
+            COOKIE_DATA.guesses[INDEX].push([]);
+        }
     }
+    guesses = COOKIE_DATA.guesses[INDEX];
     active_guess = 0;
-    solved = false;
+    if (!COOKIE_DATA.solved.hasOwnProperty(INDEX)) {
+        COOKIE_DATA.solved[INDEX] = false;
+    }
+    solved = COOKIE_DATA.solved[INDEX];
 
-    console.log(currentCycle);
+    // console.log(currentCycle);
 
     /* INIT BOARD */
 
@@ -120,7 +153,9 @@ function initBoard(index) {
         cluewrapper2.classList.add("tooltip-wrapper");
         let tooltipIcon = document.createElement("span");
         tooltipIcon.className = "tooltip-icon";
-        tooltipIcon.title = sources[i] + " - " + years[i] + " - " + convertScoreToCommon(scores[i]);
+        // store data in secondary attribute
+        tooltipIcon.setAttribute("data-source", sources[i] + " - " + years[i] + " - " + convertScoreToCommon(scores[i]));
+
         cluewrapper2.appendChild(tooltipIcon)
 
         col2.appendChild(cluewrapper)
@@ -144,11 +179,26 @@ function initBoard(index) {
         row.addEventListener("touchstart", changeActiveGuessOnClick);
     });
 
-
+    unsafeInsertLetterFromGuesses();
     changeActiveGuess(active_guess);
     updateActiveCell();
     init = true;
 }
+
+const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    customClass: {
+        popup: "colored-toast"
+    },
+    didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+    }
+});
 
 // Function to display clues on hover or touch
 function displayInfo(event) {
@@ -156,19 +206,17 @@ function displayInfo(event) {
     if (tooltip.tagName !== "SPAN") {
         tooltip = tooltip.querySelector("span.tooltip-icon");
     }
-
-    toastr.info(tooltip.title.replaceAll(" - ", "<br>"), "Source");
+    let parts = tooltip.getAttribute("data-source").split(" - ");
+    Toast.fire({
+        // title: "Source",
+        html: `${parts[0]} - ${parts[1]}<br>${parts[2]}`,
+        // icon: "info"
+        iconHtml: `<img class="toast-icon" src="./assets/${parts[0]}.svg" onerror="this.src='./assets/fallback.svg';">`,
+    });
 }
 
 function hideInfo(event) {
-    let tooltip = event.target;
-    if (tooltip.tagName !== "SPAN") {
-        tooltip = tooltip.querySelector("span.tooltip-icon");
-    }
-    if (tooltip) {
-        tooltip.classList.remove("show-tooltip");
-    }
-    toastr.remove();
+    // Toast.close();
 }
 
 function changeActiveGuessOnClick(event) {
@@ -233,6 +281,7 @@ function deleteLetter() {
     box.textContent = ""
     box.classList.remove("filled-box")
     guesses[active_guess].pop()
+    setCookieData();
 }
 
 function checkGuesses() {
@@ -246,9 +295,7 @@ function checkGuesses() {
             }
         }
     }
-    console.log("CORRECT");
-    toastr.success("You got it right! Game over!");
-    solved = true;
+    onWin();
 }
 
 function insertLetter(pressedKey) {
@@ -257,15 +304,35 @@ function insertLetter(pressedKey) {
     }
     pressedKey = pressedKey.toUpperCase()
 
-    let row = document.getElementsByClassName("letter-row")[active_guess]
-    let box = row.children[guesses[active_guess].length]
+    // let row = document.getElementsByClassName("letter-row")[active_guess]
+    // let box = row.children[guesses[active_guess].length]
+    // animateCSS(box, "pulse")
+    // box.textContent = pressedKey
+    // box.classList.add("filled-box")
+    let box = unsafeInsertLetter(pressedKey, active_guess, guesses[active_guess].length)
     animateCSS(box, "pulse")
-    box.textContent = pressedKey
-    box.classList.add("filled-box")
     guesses[active_guess].push(pressedKey);
+    setCookieData();
     if (guesses[active_guess].length === WORD_LENGTH) {
         nextGuess()
     }
+}
+
+function unsafeInsertLetterFromGuesses() {
+    for (let i = 0; i < guesses.length; i++) {
+        for (let j = 0; j < guesses[i].length; j++) {
+            unsafeInsertLetter(guesses[i][j].toUpperCase(), i, j);
+        }
+    }
+
+}
+
+function unsafeInsertLetter(key, index, position) {
+    let row = document.getElementsByClassName("letter-row")[index]
+    let box = row.children[position]
+    box.textContent = key
+    box.classList.add("filled-box")
+    return box;
 }
 
 const animateCSS = (element, animation, prefix = 'animate__') =>
@@ -358,6 +425,19 @@ function incrementIndex() {
     }
     initBoard(INDEX);
 }
+
+function onWin() {
+    Swal.fire({
+        title: "You got it right!",
+        text: "Game over!",
+        icon: "success",
+        confirmButtonText: "Next",
+    })
+    solved = true;
+    COOKIE_DATA.solved[INDEX] = true;
+    setCookieData();
+}
+
 
 initBoard(INDEX)
 
