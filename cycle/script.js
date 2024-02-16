@@ -294,13 +294,20 @@ function deleteLetter() {
 }
 
 function checkGuesses() {
+    // check if all filled out
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        if (guesses[i].length !== WORD_LENGTH) {
+            return
+        }
+    }
     // for each word in the cycle
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         // for each letter in the word
         for (let j = 0; j < WORD_LENGTH; j++) {
             // if the letter is not the same as the guess
             if (words[i][j] !== guesses[i][j]) {
-                return
+                onFail();
+                return;
             }
         }
     }
@@ -437,6 +444,17 @@ function incrementIndex() {
     }
     initBoard(INDEX);
 }
+
+function onFail() {
+    Swal.fire({
+        title: "You got it wrong!",
+        text: "Keep trying!",
+        icon: "error",
+        confirmButtonText: "Try again",
+    })
+
+}
+
 
 function onWin() {
     Swal.fire({
