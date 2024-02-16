@@ -7,6 +7,7 @@ const DEFAULT_COOKIE_DATA = {
     },
     "guesses": {},
     "solved": {},
+    "seen": {},
 }
 const START_DATE = new Date("2024-01-01 00:00:00");
 const MIN_DELTA = 0;
@@ -24,6 +25,7 @@ let day_delta = Math.floor((curr_date - START_DATE) / DAY);
 day_delta = Math.max(MIN_DELTA, Math.min(MAX_DELTA, day_delta));
 
 const COOKIE_DATA = readCookieData();
+let TODAY_INDEX = day_delta;
 
 let INDEX = day_delta;
 let currentCycle = CYCLE[INDEX];
@@ -57,8 +59,10 @@ function readCookieData() {
     } else {
         data = JSON.parse(data);
     }
-    if (data.settings === undefined) {
-        data.settings = DEFAULT_COOKIE_DATA.settings;
+    for (let key in DEFAULT_COOKIE_DATA) {
+        if (!data.hasOwnProperty(key)) {
+            data[key] = DEFAULT_COOKIE_DATA[key];
+        }
     }
     data.version = DEFAULT_COOKIE_DATA.version;
     return data;
@@ -110,6 +114,10 @@ function initBoard(index) {
         COOKIE_DATA.solved[INDEX] = false;
     }
     solved = COOKIE_DATA.solved[INDEX];
+
+    COOKIE_DATA.seen[INDEX] = true;
+
+    setCookieData();
 
     // console.log(currentCycle);
 
@@ -498,27 +506,30 @@ function showHowToPlay() {
 
 function showStats() {
     // track the following
-    // total played
-    // win %
-    // current streak
-    // max streak
+    // total played : count seen
+    // win % : solved / total played
+    // current streak : latest streak, up until today
+    // max streak, longest streak
 
-    let totalPlayed = 0;
-    let wins = 0;
-    let currentStreak = 0;
-    let maxStreak = 0;
+    let totalPlayed = Object.values(COOKIE_DATA.seen).filter(x => x).length;
+    let wins = Object.values(COOKIE_DATA.solved).filter(x => x).length;
     let streak = 0;
-    for (let i = 0; i < CYCLE.length; i++) {
+    let prevStreak = 0;
+    let maxStreak = 0;
+    for (let i = 0; i < Math.min(CYCLE.length, TODAY_INDEX + 1); i++) {
         if (COOKIE_DATA.solved[i]) {
-            wins++;
+            if (streak === 0) {
+                prevStreak = 0;
+            }
             streak++;
+            prevStreak++;
+
         } else {
             streak = 0;
         }
         if (streak > maxStreak) {
             maxStreak = streak;
         }
-        totalPlayed++;
     }
     let winPercent = (wins / totalPlayed * 100).toFixed(2);
     Dialog.fire({
@@ -526,7 +537,7 @@ function showStats() {
         html: `You have played <b>${totalPlayed}</b> cycles.<br>
         You have won <b>${wins}</b> cycles.<br>
         Your win percentage is <b>${winPercent}%</b>.<br>
-        Your current streak is <b>${streak}</b>.<br>
+        Your latest streak is <b>${prevStreak}</b>.<br>
         Your max streak is <b>${maxStreak}</b>.`,
         icon: "info",
     });
