@@ -136,6 +136,7 @@ function initBoard(index) {
     let col1 = document.createElement("div");
     col1.className = "col-6";
     col1.classList.add("touchable-col");
+    col1.classList.add("play-col");
     let col2 = document.createElement("div");
     col2.className = "col-6";
     col2.classList.add("touchable-col");
