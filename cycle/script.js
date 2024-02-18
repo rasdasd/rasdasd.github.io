@@ -177,9 +177,6 @@ function initBoard(index) {
 
         col2.appendChild(cluewrapper)
         col3.appendChild(cluewrapper2)
-
-
-
     }
 
     // Add event listeners to display clues on hover or touch
@@ -391,10 +388,16 @@ document.addEventListener("keyup", (e) => {
     }
 
     let pressedKey = String(e.key);
-    if (pressedKey === "Backspace" && guesses[active_guess].length !== 0) {
-        deleteLetter();
-        updateActiveCell();
-        return;
+    if (pressedKey === "Backspace") {
+        if (guesses[active_guess].length !== 0) {
+            deleteLetter();
+            updateActiveCell();
+            return;
+        } else {
+            prevGuess();
+            updateActiveCell();
+            return;
+        }
     }
 
     if (pressedKey === "ArrowUp") {
