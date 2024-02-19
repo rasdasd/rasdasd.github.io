@@ -492,9 +492,20 @@ const Dialog = Swal.mixin({
 
 function showHowToPlay() {
     // show a welcome message, and have the confirmation button be a share button
+
+    // instructions for how to play:
+    // given clues, come up with the answer
+    // adjacent answers differ by exactly one letter
+    // the first and last rows are adjacent
+    let explanation_of_rules_html = `
+    <li>Given the clues, come up with the answer.</li>
+    <li>Adjacent answers differ by exactly one letter.</li>
+    <li>The first and last rows are adjacent.</li>
+    `;
+
     Dialog.fire({
-        title: "Welcome to the game!",
-        html: `This is a game of <b>Word Cycles</b>. The goal is to guess the word in each cycle. Use the keyboard to enter letters. Use the arrows to navigate between cycles. The game will automatically save your progress. Good luck!`,
+        title: "How To Play Word Cycles",
+        html:  explanation_of_rules_html,
         icon: "question",
         confirmButtonText: "Share",
         preConfirm: async () => {
@@ -506,6 +517,23 @@ function showHowToPlay() {
             return false;
         }
     });
+
+
+    // OLD CODE
+    // Dialog.fire({
+    //     title: "Welcome to the game!",
+    //     html: `This is a game of <b>Word Cycles</b>. The goal is to guess the word in each cycle. Use the keyboard to enter letters. Use the arrows to navigate between cycles. The game will automatically save your progress. Good luck!`,
+    //     icon: "question",
+    //     confirmButtonText: "Share",
+    //     preConfirm: async () => {
+    //         // copy link to clipboard
+    //         navigator.clipboard.writeText(window.location.href);
+    //         Swal.showValidationMessage(
+    //             "Link copied to clipboard"
+    //         );
+    //         return false;
+    //     }
+    // });
 }
 
 function showStats() {
