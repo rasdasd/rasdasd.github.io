@@ -1,6 +1,6 @@
 :root {
-    --w-scale: 5vw;
-    --max-width: 75px;
+    --w-scale: min(7vw, 7vh);
+    --max-width: 65px;
 
     /* COLORS NORMAL */
 
@@ -39,7 +39,7 @@ body {
 }
 
 .nav-button {
-    font-size: 3rem;
+    font-size: 1.5rem;
     font-weight: 700;
     margin: 0 0.5rem;
     padding: 0.5rem;
@@ -60,6 +60,9 @@ body {
 h1 {
     text-align: center;
     font-size: 3rem;
+    margin: 0;
+    padding: 0px;
+    padding-bottom: 5px;
     flex-grow: 1;
 }
 
@@ -95,7 +98,7 @@ h1 {
 
 #game-board {
     display: flex;
-    align-items: center;
+    align-items: top;
     flex-direction: row;
     justify-content: center;
 }
@@ -105,13 +108,33 @@ h1 {
     flex-direction: column;
 }
 
+#answer-row {
+    flex-grow: 5;
+    justify-content: right;
+}
+
+#clue-row {
+    flex-grow: 5;
+    justify-content: left;
+}
+
+#info-row {
+    flex-grow: 0.01;
+    justify-content: center;
+}
+
 .clue-wrapper {
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: left;
     height: var(--w-scale);
     margin: 4px 0;
     max-height: var(--max-width);
+}
+
+.clue-wrapper.letter-row {
+    justify-content: right;
 }
 
 .active-box {
@@ -224,8 +247,8 @@ h1 {
     /* Set the width of the icon */
     height: 20px;
     /* Set the height of the icon */
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-left: 2px;
+    margin-right: 2px;
     /* Adjust the spacing between the icon and the letter row */
     cursor: default;
     /* Change cursor to default on hover */
@@ -272,7 +295,7 @@ h1 {
     #date {
         font-size: 1.5rem;
     }
-
+/* 
 
     .clue-wrapper {
         height: 1.75rem;
@@ -285,14 +308,15 @@ h1 {
         margin: 2px 0.5px;
     }
 
-    .tooltip-icon {
-        width: 16px;
-        height: 16px;
-    }
 
     .clue {
         font-size: 0.75rem;
         line-height: 0.75rem;
+    }
+     */
+    .tooltip-icon {
+        width: 16px;
+        height: 16px;
     }
 
     .keyboard-button {

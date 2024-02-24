@@ -137,13 +137,16 @@ function initBoard(index) {
     col1.className = "col-6";
     col1.classList.add("touchable-col");
     col1.classList.add("play-col");
+    col1.id = "answer-row"
     let col2 = document.createElement("div");
     col2.className = "col-6";
     col2.classList.add("touchable-col");
+    col2.id = "clue-row"
     board.appendChild(col1);
     board.appendChild(col2);
     let col3 = document.createElement("div");
     col3.className = "col-6";
+    col3.id = "info-row"
     board.appendChild(col3);
 
     for (let i = 0; i < CYCLE_LENGTH; i++) {
