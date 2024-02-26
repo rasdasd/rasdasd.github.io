@@ -16,6 +16,8 @@
     --bg-dark: #333;
     --border-color-dark: #f5f5f5;
     --font-color-dark: white;
+    --highlight-row-color-dark: #a7d7ff7e;
+    --highlight-cell-color-dark: #ffd90060;
 
 }
 
@@ -98,7 +100,6 @@ h1 {
 
 #game-board {
     display: flex;
-    align-items: top;
     flex-direction: row;
     justify-content: center;
 }
@@ -109,18 +110,13 @@ h1 {
 }
 
 #answer-row {
-    flex-grow: 5;
+    flex-grow: 1;
     justify-content: right;
 }
 
 #clue-row {
-    flex-grow: 5;
+    flex-grow: 1;
     justify-content: left;
-}
-
-#info-row {
-    flex-grow: 0.01;
-    justify-content: center;
 }
 
 .clue-wrapper {
@@ -137,8 +133,15 @@ h1 {
     justify-content: right;
 }
 
+.clue-wrapper.clue-info-wrapper {
+    justify-content: space-between;
+}
+
 .active-box {
     background-color: var(--highlight-cell-color) !important;
+}
+.dark-mode .active-box {
+    background-color: var(--highlight-cell-color-dark) !important;
 }
 
 .active-row {
@@ -146,7 +149,7 @@ h1 {
 }
 
 .dark-mode .active-row {
-    background-color: gray;
+    background-color: var(--highlight-row-color-dark);
 }
 
 .dark-mode .swal2-modal {
@@ -182,7 +185,7 @@ h1 {
 
 .clue {
     margin: 4px 0.5rem;
-    font-size: calc(min(85px, var(--w-scale)) * 0.5);
+    font-size: calc(min(85px, var(--w-scale)) * 0.45);
     font-weight: 700;
     pointer-events: none;
 }
@@ -288,41 +291,36 @@ h1 {
 
 /* Media queries for smaller screens */
 @media only screen and (max-width: 450px) and (min-width: 0px) {
+    :root {
+        --w-scale: min(9vw, 4.2vh);
+    }
+    #game-board {
+        flex-direction: column;
+    }
     h1 {
-        font-size: 2rem;
+        font-size: 1rem;
+    }
+    h2 {
+        font-size: 1rem;
     }
 
     #date {
         font-size: 1.5rem;
     }
-/* 
 
-    .clue-wrapper {
-        height: 1.75rem;
+    .clue-wrapper.letter-row {
+        justify-content: center;
     }
-
-    .letter-box {
-        font-size: 1.25rem;
-        height: 1.25rem;
-        width: 1.25rem;
-        margin: 2px 0.5px;
-    }
-
-
-    .clue {
-        font-size: 0.75rem;
-        line-height: 0.75rem;
-    }
-     */
     .tooltip-icon {
         width: 16px;
         height: 16px;
     }
 
     .keyboard-button {
-        font-size: 1rem;
+        /* font-size: 1rem; */
         padding: 0.15rem;
         margin: 0 3px 3px 0;
+        height: 50px;
     }
 
     #keyboard-cont {
@@ -333,13 +331,18 @@ h1 {
     }
 
     .keyboard-button.aux-button {
-        font-size: 0.6em;
+        font-size: 0.55em;
     }
 
     .small-button {
         font-size: 1rem;
         padding: 0px;
         margin: 1px;
+    }
+
+    .nav-button {
+        font-size: 1rem;
+        padding: 0;
     }
 
 }

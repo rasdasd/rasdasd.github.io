@@ -144,10 +144,6 @@ function initBoard(index) {
     col2.id = "clue-row"
     board.appendChild(col1);
     board.appendChild(col2);
-    let col3 = document.createElement("div");
-    col3.className = "col-6";
-    col3.id = "info-row"
-    board.appendChild(col3);
 
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         let row = document.createElement("div")
@@ -163,28 +159,25 @@ function initBoard(index) {
 
         let cluewrapper = document.createElement("div");
         cluewrapper.className = "clue-wrapper"
+        cluewrapper.classList.add("clue-info-wrapper");
         let clue = document.createElement("div")
         clue.className = "clue"
         clue.textContent = clues[i]
         cluewrapper.appendChild(clue)
 
         // Create a tooltip icon
-        let cluewrapper2 = document.createElement("div");
-        cluewrapper2.className = "clue-wrapper"
-        cluewrapper2.classList.add("tooltip-wrapper");
         let tooltipIcon = document.createElement("span");
         tooltipIcon.className = "tooltip-icon";
         // store data in secondary attribute
         tooltipIcon.setAttribute("data-source", sources[i] + " - " + years[i] + " - " + convertScoreToCommon(scores[i]));
 
-        cluewrapper2.appendChild(tooltipIcon)
+        cluewrapper.appendChild(tooltipIcon)
 
         col2.appendChild(cluewrapper)
-        col3.appendChild(cluewrapper2)
     }
 
     // Add event listeners to display clues on hover or touch
-    document.querySelectorAll(".tooltip-wrapper").forEach(row => {
+    document.querySelectorAll(".tooltip-icon").forEach(row => {
         row.addEventListener("mouseenter", displayInfo);
         row.addEventListener("mouseleave", hideInfo);
         row.addEventListener("touchstart", displayInfo);
