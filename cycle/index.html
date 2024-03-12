@@ -6,6 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Cycle</title>
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            font-family: 'Lato', sans-serif;
+        }
+        button {
+            font-family: 'Lato', sans-serif;
+        }
+    </style>
+    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
@@ -14,57 +26,66 @@
     <div class="title-header">
         <!-- insert previous -->
         <button class="nav-button prev-button" id="prev-button">⇦</button>
-        <h1> Word Cycle </h1>        
-        <!-- insert next -->
-        <button class="nav-button next-button" id="next-button">⇨</button>
-    </div>
-    <div class="subtitle-wrapper">
+        <h1> Cycle </h1>  
         <h2 id="date"></h2>
         <div class="small-button-wrapper">
             <button class="small-button" id="help-button">❓</button>
             <button class="small-button" id="stats-button">📊</button>
             <button class="small-button" id="settings-button">⚙️</button>
-        </div>
+        </div>      
+        <!-- insert next -->
+        <button class="nav-button next-button" id="next-button">⇨</button>
     </div>
 
     <div id="game-board">
 
     </div>
 
-    <div id="keyboard-cont">
-        <div class="first-row">
-            <button class="keyboard-button">q</button>
-            <button class="keyboard-button">w</button>
-            <button class="keyboard-button">e</button>
-            <button class="keyboard-button">r</button>
-            <button class="keyboard-button">t</button>
-            <button class="keyboard-button">y</button>
-            <button class="keyboard-button">u</button>
-            <button class="keyboard-button">i</button>
-            <button class="keyboard-button">o</button>
-            <button class="keyboard-button">p</button>
+    <div id="bottom-wrapper">
+        <div id="clue-wrapper" class="active-row">
+            <button class="clue-button" id="prev-clue-button">⇦</button>
+            <span id="clue"></span>
+            <button class="clue-button" id="next-clue-button">⇨</button>
+
         </div>
-        <div class="second-row">
-            <button class="keyboard-button">a</button>
-            <button class="keyboard-button">s</button>
-            <button class="keyboard-button">d</button>
-            <button class="keyboard-button">f</button>
-            <button class="keyboard-button">g</button>
-            <button class="keyboard-button">h</button>
-            <button class="keyboard-button">j</button>
-            <button class="keyboard-button">k</button>
-            <button class="keyboard-button">l</button>
-        </div>
-        <div class="third-row">
-            <button class="keyboard-button aux-button">Next</button>
-            <button class="keyboard-button">z</button>
-            <button class="keyboard-button">x</button>
-            <button class="keyboard-button">c</button>
-            <button class="keyboard-button">v</button>
-            <button class="keyboard-button">b</button>
-            <button class="keyboard-button">n</button>
-            <button class="keyboard-button">m</button>
-            <button class="keyboard-button aux-button">Del</button>
+
+        <div id="keyboard-cont">
+            <div class="first-row">
+                <button class="keyboard-button">q</button>
+                <button class="keyboard-button">w</button>
+                <button class="keyboard-button">e</button>
+                <button class="keyboard-button">r</button>
+                <button class="keyboard-button">t</button>
+                <button class="keyboard-button">y</button>
+                <button class="keyboard-button">u</button>
+                <button class="keyboard-button">i</button>
+                <button class="keyboard-button">o</button>
+                <button class="keyboard-button">p</button>
+            </div>
+            <div class="second-row">
+                <button class="half-grow"></button>
+                <button class="keyboard-button">a</button>
+                <button class="keyboard-button">s</button>
+                <button class="keyboard-button">d</button>
+                <button class="keyboard-button">f</button>
+                <button class="keyboard-button">g</button>
+                <button class="keyboard-button">h</button>
+                <button class="keyboard-button">j</button>
+                <button class="keyboard-button">k</button>
+                <button class="keyboard-button">l</button>
+                <button class="half-grow"></button>
+            </div>
+            <div class="third-row">
+                <button class="keyboard-button aux-button enter">↵</button>
+                <button class="keyboard-button">z</button>
+                <button class="keyboard-button">x</button>
+                <button class="keyboard-button">c</button>
+                <button class="keyboard-button">v</button>
+                <button class="keyboard-button">b</button>
+                <button class="keyboard-button">n</button>
+                <button class="keyboard-button">m</button>
+                <button class="keyboard-button aux-button delete">⌫</button>
+            </div>
         </div>
     </div>
 

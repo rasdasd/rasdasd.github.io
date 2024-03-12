@@ -1,7 +1,4 @@
 :root {
-    --w-scale: min(7vw, 7vh);
-    --max-width: 65px;
-
     /* COLORS NORMAL */
 
     --info-color: hwb(195 83% 3%);
@@ -19,12 +16,34 @@
     --highlight-row-color-dark: #a7d7ff7e;
     --highlight-cell-color-dark: #ffd90060;
 
+
+    /* BOARD */
+    --board-h: calc(100vh - 36px - 147px - 30px - 36px);
+    --cycle-length: 10;
+    --word-length: 10;
 }
 
 body {
     background-color: var(--bg);
     color: var(--font-color);
-
+}
+.title-header {
+    height: 36px;
+}
+#game-board {
+    height: calc(100vh - 36px - 147px - 30px - 16px);
+}
+#clue-wrapper {
+    height: 30px;
+}
+#keyboard-cont {
+    height: 147px;
+}
+#bottom-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
 }
 
 .dark-mode {
@@ -41,7 +60,7 @@ body {
 }
 
 .nav-button {
-    font-size: 1.5rem;
+    font-size: 0.5rem;
     font-weight: 700;
     margin: 0 0.5rem;
     padding: 0.5rem;
@@ -61,20 +80,11 @@ body {
 
 h1 {
     text-align: center;
-    font-size: 3rem;
+    font-size: 1rem;
     margin: 0;
     padding: 0px;
     padding-bottom: 5px;
     flex-grow: 1;
-}
-
-.subtitle-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin: 0.5rem 0;
-
 }
 
 .small-button-wrapper {
@@ -92,7 +102,7 @@ h1 {
 
 
 #date {
-    font-size: 2rem;
+    font-size: 1rem;
     text-align: center;
     width: 100%;
     margin: 0;
@@ -111,30 +121,16 @@ h1 {
 
 #answer-row {
     flex-grow: 1;
-    justify-content: right;
+    justify-content: center;
 }
 
-#clue-row {
-    flex-grow: 1;
-    justify-content: left;
-}
 
-.clue-wrapper {
+.letter-row {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: left;
-    height: var(--w-scale);
+    justify-content: center;
     margin: 4px 0;
-    max-height: var(--max-width);
-}
-
-.clue-wrapper.letter-row {
-    justify-content: right;
-}
-
-.clue-wrapper.clue-info-wrapper {
-    justify-content: space-between;
 }
 
 .active-box {
@@ -161,18 +157,20 @@ h1 {
     border: 2px solid gray;
     border-radius: 3px;
     margin: 2px;
-    font-size: min(85px, var(--w-scale));
     font-weight: 700;
-    height: var(--w-scale);
-    width: var(--w-scale);
     display: flex;
     justify-content: center;
     align-items: center;
     text-transform: uppercase;
     pointer-events: none;
-    max-width: var(--max-width);
-    max-height: var(--max-width);
+    /* font-size set to 65% of actual div width */ /* for now fill it */
+    font-size: min(calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length))),calc((98vw / var(--word-length)) - (2px * var(--word-length))));
+    height: calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length)));
+    width: calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length)));
+    max-width: calc((98vw / var(--word-length)) - (2px * var(--word-length)));
+    max-height: calc((98vw / var(--word-length)) - (2px * var(--word-length)));
 }
+
 
 .dark-mode .letter-box {
     border: 2px solid var(--border-color-dark);
@@ -183,16 +181,25 @@ h1 {
     pointer-events: none;
 }
 
-.clue {
-    margin: 4px 0.5rem;
-    font-size: calc(min(85px, var(--w-scale)) * 0.45);
-    font-weight: 700;
-    pointer-events: none;
+#clue-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+}
+
+#clue {
+    font-size: 1rem;
+    text-align: center;
+    width: 100%;
 }
 
 #keyboard-cont {
-    margin-top: 20px;
-    width: 100%;
+    /* position: fixed;
+    bottom: 0;
+    left: 1vw;
+    width: 98vw; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -205,9 +212,20 @@ h1 {
 }
 
 .keyboard-button.aux-button {
-    /* flex: 2; */
-    font-size: 1em;
+    flex: 2;
     max-width: 118px;
+}
+.keyboard-button.aux-button.enter{
+    font-size: min(8vw, 2rem);
+
+}
+.keyboard-button.aux-button.delete{
+    align-items: baseline;
+}
+
+.half-grow {
+    flex-grow: 0.5;
+    visibility: hidden;
 }
 
 .keyboard-button {
@@ -215,9 +233,9 @@ h1 {
     /* adjusted for consistency with new setup */
     font-weight: bold;
     /* adjusted for consistency with new setup */
-    margin: 0 6px 8px 0;
+    margin: 2px;
     /* adjusted margin for better spacing */
-    height: 58px;
+    height: 45px;
     /* adjusted for consistency with new setup */
     border-radius: 4px;
     /* adjusted for consistency with new setup */
@@ -265,7 +283,6 @@ h1 {
     filter: invert(1);
 }
 
-
 .colored-toast {
     background-color: var(--info-color) !important;
 }
@@ -286,65 +303,6 @@ h1 {
 
 .swal2-validation-message::before {
     display: none;
-}
-
-
-/* Media queries for smaller screens */
-@media only screen and (max-width: 450px) and (min-width: 0px) {
-    :root {
-        --w-scale: min(9vw, 4.2vh);
-    }
-    #game-board {
-        flex-direction: column;
-    }
-    h1 {
-        font-size: 1rem;
-    }
-    h2 {
-        font-size: 1rem;
-    }
-
-    #date {
-        font-size: 1.5rem;
-    }
-
-    .clue-wrapper.letter-row {
-        justify-content: center;
-    }
-    .tooltip-icon {
-        width: 16px;
-        height: 16px;
-    }
-
-    .keyboard-button {
-        /* font-size: 1rem; */
-        padding: 0.15rem;
-        margin: 0 3px 3px 0;
-        height: 50px;
-    }
-
-    #keyboard-cont {
-        position: fixed;
-        bottom: 0;
-        left: 1vw;
-        width: 98vw;
-    }
-
-    .keyboard-button.aux-button {
-        font-size: 0.55em;
-    }
-
-    .small-button {
-        font-size: 1rem;
-        padding: 0px;
-        margin: 1px;
-    }
-
-    .nav-button {
-        font-size: 1rem;
-        padding: 0;
-    }
-
 }
 
 .setting {

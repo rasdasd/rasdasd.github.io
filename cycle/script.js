@@ -1,6 +1,6 @@
 import { CYCLE } from "./cycles.js";
 const DEFAULT_COOKIE_DATA = {
-    "version": "1.0.0",
+    "version": "0.9.0",
     "settings": {
         "virtual_keyboard_input_only": false,
         "dark_mode": false,
@@ -59,6 +59,9 @@ function readCookieData() {
     } else {
         data = JSON.parse(data);
     }
+    if (data.version.split(".")[0] !== DEFAULT_COOKIE_DATA.version.split(".")[0]) {
+        data = DEFAULT_COOKIE_DATA;
+    }
     for (let key in DEFAULT_COOKIE_DATA) {
         if (!data.hasOwnProperty(key)) {
             data[key] = DEFAULT_COOKIE_DATA[key];
@@ -91,6 +94,83 @@ function convertScoreToCommon(score) {
 }
 
 function initBoard(index) {
+    /* INIT DATA */
+    INDEX = index;
+    currentCycle = CYCLE[INDEX];
+    words = currentCycle.cycle;
+    clues = currentCycle.clues;
+    sources = currentCycle.sources;
+    scores = currentCycle.scores;
+    years = currentCycle.years;
+    CYCLE_LENGTH = words.length;
+    WORD_LENGTH = words[0].length;
+    if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
+        COOKIE_DATA.guesses[INDEX] = [];
+        for (let i = 0; i < CYCLE_LENGTH; i++) {
+            COOKIE_DATA.guesses[INDEX].push([]);
+        }
+    }
+    guesses = COOKIE_DATA.guesses[INDEX];
+    active_guess = 0;
+    if (!COOKIE_DATA.solved.hasOwnProperty(INDEX)) {
+        COOKIE_DATA.solved[INDEX] = false;
+    }
+    solved = COOKIE_DATA.solved[INDEX];
+
+    COOKIE_DATA.seen[INDEX] = true;
+
+    setCookieData();
+
+    // console.log(currentCycle);
+
+    /* INIT BOARD */
+
+    let dateDiv = document.getElementById("date");
+    dateDiv.textContent = new Date(START_DATE.getTime() + index * DAY).toLocaleDateString(undefined, date_display_options);
+
+
+    let board = document.getElementById("game-board");
+    /* remove all eleemnts from board */
+    while (board.firstChild) {
+        board.removeChild(board.firstChild);
+    }
+    let col1 = document.createElement("div");
+    col1.className = "col-6";
+    col1.classList.add("touchable-col");
+    col1.classList.add("play-col");
+    col1.id = "answer-row";
+    board.appendChild(col1);
+
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        let row = document.createElement("div")
+        row.className = "letter-row"
+
+        for (let j = 0; j < WORD_LENGTH; j++) {
+            let box = document.createElement("div")
+            box.className = "letter-box"
+            box.classList.add(`count${CYCLE_LENGTH}`)
+            row.appendChild(box)
+        }
+        col1.appendChild(row)
+    }
+    let root = document.querySelector(":root");
+    root.style.setProperty("--cycle-length", CYCLE_LENGTH);
+    root.style.setProperty("--word-length", WORD_LENGTH);
+
+    // on mouseclick or touch, change the active guess
+    document.querySelectorAll(".letter-row").forEach(row => {
+        row.addEventListener("click", changeActiveGuessOnClick);
+        row.addEventListener("touchstart", changeActiveGuessOnClick);
+    });
+
+    unsafeInsertLetterFromGuesses();
+    changeActiveGuess(active_guess);
+    updateActiveCell();
+    init = true;
+
+}
+
+function oldInitBoard(index) {
     init = false;
     /* INIT DATA */
     INDEX = index;
@@ -238,7 +318,7 @@ function changeActiveGuessOnClick(event) {
     let cols = document.getElementsByClassName("touchable-col")
     for (let i = 0; i < cols.length; i++) {
         let col = cols[i]
-        let clues = col.getElementsByClassName("clue-wrapper");
+        let clues = col.getElementsByClassName("letter-row");
         for (let i = 0; i < CYCLE_LENGTH; i++) {
             if (clues[i] === clue) {
                 changeActiveGuess(i);
@@ -275,6 +355,8 @@ function changeActiveGuess(newActive) {
         oldRow.classList.remove("active-row")
         newRow.classList.add("active-row")
     }
+    let clue = document.getElementById("clue");
+    clue.textContent = clues[newActive];
     active_guess = newActive;
 }
 
@@ -501,7 +583,7 @@ function showHowToPlay() {
 
     Dialog.fire({
         title: "How To Play Word Cycles",
-        html:  explanation_of_rules_html,
+        html: explanation_of_rules_html,
         icon: "question",
         confirmButtonText: "Share",
         preConfirm: async () => {
@@ -692,4 +774,17 @@ document.getElementById("stats-button").addEventListener("click", (e) => {
 /* implement help-button */
 document.getElementById("help-button").addEventListener("click", (e) => {
     showHowToPlay();
+});
+
+
+let prevClueButton = document.getElementById("prev-clue-button");
+let nextClueButton = document.getElementById("next-clue-button");
+
+prevClueButton.addEventListener("click", (e) => {
+    prevGuess();
+    updateActiveCell();
+});
+nextClueButton.addEventListener("click", (e) => {
+    nextGuess();
+    updateActiveCell();
 });
