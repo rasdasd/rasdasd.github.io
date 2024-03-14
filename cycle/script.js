@@ -507,10 +507,10 @@ document.getElementById("keyboard-cont").addEventListener("click", (e) => {
     }
     let key = target.textContent
 
-    if (key === "Del") {
+    if (key === "⌫") {
         key = "Backspace"
     }
-    else if (key === "Next") {
+    else if (key === "↵") {
         key = "ArrowDown"
     }
 

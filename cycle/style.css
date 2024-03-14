@@ -32,12 +32,15 @@ body {
 }
 #game-board {
     height: calc(100vh - 36px - 147px - 30px - 16px);
+    user-select: none;
 }
 #clue-wrapper {
     height: 30px;
+    user-select: none;
 }
 #keyboard-cont {
     height: 147px;
+    user-select: none;
 }
 #bottom-wrapper {
     position: fixed;
