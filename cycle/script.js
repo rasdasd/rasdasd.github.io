@@ -1,6 +1,6 @@
 import { CYCLE } from "./cycles.js";
 const DEFAULT_COOKIE_DATA = {
-    "version": "0.9.0",
+    "version": "1.1.0",
     "settings": {
         "virtual_keyboard_input_only": false,
         "dark_mode": false,
@@ -36,18 +36,25 @@ let scores = currentCycle.scores;
 let years = currentCycle.years;
 let CYCLE_LENGTH = words.length;
 let WORD_LENGTH = words[0].length;
+
 if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
     COOKIE_DATA.guesses[INDEX] = [];
     for (let i = 0; i < CYCLE_LENGTH; i++) {
-        COOKIE_DATA.guesses[INDEX].push([]);
+        // blank_word is WORD_LENGTH spaces
+        let blank_word = Array(WORD_LENGTH).fill(" ").join("");
+        COOKIE_DATA.guesses[INDEX].push(blank_word);
     }
 }
+
 let guesses = COOKIE_DATA.guesses[INDEX];
-let active_guess = 0;
+
 if (!COOKIE_DATA.solved.hasOwnProperty(INDEX)) {
     COOKIE_DATA.solved[INDEX] = false;
 }
 let solved = COOKIE_DATA.solved[INDEX];
+
+let ROW = 0;
+let COL = 0;
 
 setCookieData();
 let init = false;
@@ -104,20 +111,26 @@ function initBoard(index) {
     years = currentCycle.years;
     CYCLE_LENGTH = words.length;
     WORD_LENGTH = words[0].length;
+
     if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
         COOKIE_DATA.guesses[INDEX] = [];
         for (let i = 0; i < CYCLE_LENGTH; i++) {
-            COOKIE_DATA.guesses[INDEX].push([]);
+            // blank_word is WORD_LENGTH spaces
+            let blank_word = Array(WORD_LENGTH).fill(" ").join("");
+            COOKIE_DATA.guesses[INDEX].push(blank_word);
         }
     }
     guesses = COOKIE_DATA.guesses[INDEX];
-    active_guess = 0;
+
     if (!COOKIE_DATA.solved.hasOwnProperty(INDEX)) {
         COOKIE_DATA.solved[INDEX] = false;
     }
     solved = COOKIE_DATA.solved[INDEX];
 
     COOKIE_DATA.seen[INDEX] = true;
+
+    ROW = 0;
+    COL = 0;
 
     setCookieData();
 
@@ -158,122 +171,71 @@ function initBoard(index) {
     root.style.setProperty("--word-length", WORD_LENGTH);
 
     // on mouseclick or touch, change the active guess
-    document.querySelectorAll(".letter-row").forEach(row => {
-        row.addEventListener("click", changeActiveGuessOnClick);
-        row.addEventListener("touchstart", changeActiveGuessOnClick);
+    document.querySelectorAll(".letter-box").forEach(cell => {
+        cell.addEventListener("click", changeActiveGuessOnClick);
+        cell.addEventListener("touchstart", changeActiveGuessOnClick);
     });
 
     unsafeInsertLetterFromGuesses();
-    changeActiveGuess(active_guess);
-    updateActiveCell();
+    setActiveCell(CYCLE_LENGTH - 1, WORD_LENGTH - 1);
+    incrementToNextBlank();
     init = true;
 
 }
 
-function oldInitBoard(index) {
-    init = false;
-    /* INIT DATA */
-    INDEX = index;
-    currentCycle = CYCLE[INDEX];
-    words = currentCycle.cycle;
-    clues = currentCycle.clues;
-    sources = currentCycle.sources;
-    scores = currentCycle.scores;
-    years = currentCycle.years;
-    CYCLE_LENGTH = words.length;
-    WORD_LENGTH = words[0].length;
-    if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
-        COOKIE_DATA.guesses[INDEX] = [];
-        for (let i = 0; i < CYCLE_LENGTH; i++) {
-            COOKIE_DATA.guesses[INDEX].push([]);
-        }
-    }
-    guesses = COOKIE_DATA.guesses[INDEX];
-    active_guess = 0;
-    if (!COOKIE_DATA.solved.hasOwnProperty(INDEX)) {
-        COOKIE_DATA.solved[INDEX] = false;
-    }
-    solved = COOKIE_DATA.solved[INDEX];
-
-    COOKIE_DATA.seen[INDEX] = true;
-
-    setCookieData();
-
-    // console.log(currentCycle);
-
-    /* INIT BOARD */
-
-    let dateDiv = document.getElementById("date");
-    dateDiv.textContent = new Date(START_DATE.getTime() + index * DAY).toLocaleDateString(undefined, date_display_options);
-
-
-    let board = document.getElementById("game-board");
-    /* remove all eleemnts from board */
-    while (board.firstChild) {
-        board.removeChild(board.firstChild);
-    }
-
-    let col1 = document.createElement("div");
-    col1.className = "col-6";
-    col1.classList.add("touchable-col");
-    col1.classList.add("play-col");
-    col1.id = "answer-row"
-    let col2 = document.createElement("div");
-    col2.className = "col-6";
-    col2.classList.add("touchable-col");
-    col2.id = "clue-row"
-    board.appendChild(col1);
-    board.appendChild(col2);
-
-    for (let i = 0; i < CYCLE_LENGTH; i++) {
-        let row = document.createElement("div")
-        row.className = "clue-wrapper"
-        row.classList.add("letter-row");
-
-        for (let j = 0; j < WORD_LENGTH; j++) {
-            let box = document.createElement("div")
-            box.className = "letter-box"
-            row.appendChild(box)
-        }
-        col1.appendChild(row)
-
-        let cluewrapper = document.createElement("div");
-        cluewrapper.className = "clue-wrapper"
-        cluewrapper.classList.add("clue-info-wrapper");
-        let clue = document.createElement("div")
-        clue.className = "clue"
-        clue.textContent = clues[i]
-        cluewrapper.appendChild(clue)
-
-        // Create a tooltip icon
-        let tooltipIcon = document.createElement("span");
-        tooltipIcon.className = "tooltip-icon";
-        // store data in secondary attribute
-        tooltipIcon.setAttribute("data-source", sources[i] + " - " + years[i] + " - " + convertScoreToCommon(scores[i]));
-
-        cluewrapper.appendChild(tooltipIcon)
-
-        col2.appendChild(cluewrapper)
-    }
-
-    // Add event listeners to display clues on hover or touch
-    document.querySelectorAll(".tooltip-icon").forEach(row => {
-        row.addEventListener("mouseenter", displayInfo);
-        row.addEventListener("mouseleave", hideInfo);
-        row.addEventListener("touchstart", displayInfo);
-        row.addEventListener("touchend", hideInfo);
-    });
-
-    // on mouseclick or touch, change the active guess
-    document.querySelectorAll(".clue-wrapper").forEach(row => {
-        row.addEventListener("click", changeActiveGuessOnClick);
-        row.addEventListener("touchstart", changeActiveGuessOnClick);
-    });
-
-    unsafeInsertLetterFromGuesses();
-    changeActiveGuess(active_guess);
+function update() {
     updateActiveCell();
-    init = true;
+    updateClue();
+}
+
+function incrementToNextBlank() {
+    let initialRow = ROW;
+    let initialCol = COL;
+    do {
+        incrementCell(true);
+    } while (charAt(ROW, COL) !== " " && (ROW !== initialRow || COL !== initialCol));
+    update();
+}
+
+function incrementCell(skip_update=false) {
+    COL = (COL + 1) % WORD_LENGTH;
+    if (COL === 0) {
+        incrementRow(true);
+    }
+    if (! skip_update) {
+        update();
+    }
+}
+
+
+function incrementRow(skip_update=false) {
+    ROW = (ROW + 1) % CYCLE_LENGTH;
+    if (! skip_update) {
+        update();
+    }
+}
+
+function decrementCell(skip_update=false) {
+    COL = (COL - 1 + WORD_LENGTH) % WORD_LENGTH;
+    if (COL === WORD_LENGTH - 1) {
+        decrementRow(true);
+    }
+    if (! skip_update) {
+        update();
+    }
+}
+
+function decrementRow(skip_update=false) {
+    ROW = (ROW - 1 + CYCLE_LENGTH) % CYCLE_LENGTH;
+    if (! skip_update) {
+        update();
+    }
+}
+
+function setActiveCell(row, col) {
+    ROW = row;
+    COL = col;
+    update();
 }
 
 const Toast = Swal.mixin({
@@ -311,22 +273,15 @@ function hideInfo(event) {
 }
 
 function changeActiveGuessOnClick(event) {
-    let clue = event.target;
-    if (clue.tagName !== "DIV") {
-        clue = clue.parentElement;
-    }
-    let cols = document.getElementsByClassName("touchable-col")
-    for (let i = 0; i < cols.length; i++) {
-        let col = cols[i]
-        let clues = col.getElementsByClassName("letter-row");
-        for (let i = 0; i < CYCLE_LENGTH; i++) {
-            if (clues[i] === clue) {
-                changeActiveGuess(i);
-                updateActiveCell();
-                return;
-            }
-        }
-    }
+    let row = event.target.parentElement;
+    let row_index = Array.from(row.parentElement.children).indexOf(row);
+    let col_index = Array.from(row.children).indexOf(event.target);
+    setActiveCell(row_index, col_index);
+}
+
+function updateClue() {
+    let clue = document.getElementById("clue");
+    clue.textContent = clues[ROW];
 }
 
 function updateActiveCell() {
@@ -337,50 +292,42 @@ function updateActiveCell() {
         for (let j = 0; j < WORD_LENGTH; j++) {
             boxes[j].classList.remove("active-box")
             // add active-box to the active cell
-            if (i === active_guess && j === Math.min(guesses[active_guess].length, WORD_LENGTH - 1)) {
+            if (i === ROW && j === COL) {
                 boxes[j].classList.add("active-box")
             }
+        }
+    }
+    for (let i = 0; i < CYCLE_LENGTH; i++) {
+        let row = rows[i];
+        row.classList.remove("active-row");
+        if (i === ROW) {
+            row.classList.add("active-row");
         }
     }
 
 }
 
-function changeActiveGuess(newActive) {
-    let cols = document.getElementsByClassName("col-6")
-    // for each col
-    for (let i = 0; i < cols.length; i++) {
-        let oldRow = cols[i].children[active_guess]
-        let newRow = cols[i].children[newActive]
-
-        oldRow.classList.remove("active-row")
-        newRow.classList.add("active-row")
-    }
-    let clue = document.getElementById("clue");
-    clue.textContent = clues[newActive];
-    active_guess = newActive;
-}
-
-function nextGuess() {
-    changeActiveGuess((active_guess + 1) % CYCLE_LENGTH);
-}
-
-function prevGuess() {
-    changeActiveGuess((active_guess - 1 + CYCLE_LENGTH) % CYCLE_LENGTH);
+function charAt(row, col) {
+    return guesses[row].charAt(col);
 }
 
 function deleteLetter() {
-    let row = document.getElementsByClassName("letter-row")[active_guess]
-    let box = row.children[guesses[active_guess].length - 1]
+    let c = charAt(ROW, COL);
+    if (c === " ") {
+        decrementCell();
+    }
+    let row = document.getElementsByClassName("letter-row")[ROW]
+    let box = row.children[COL]
     box.textContent = ""
     box.classList.remove("filled-box")
-    guesses[active_guess].pop()
+    guesses[ROW] = guesses[ROW].substring(0, COL) + " " + guesses[ROW].substring(COL + 1);
     setCookieData();
 }
 
 function checkGuesses() {
     // check if all filled out
     for (let i = 0; i < CYCLE_LENGTH; i++) {
-        if (guesses[i].length !== WORD_LENGTH) {
+        if (guesses[i].includes(" ")) {
             return
         }
     }
@@ -398,36 +345,30 @@ function checkGuesses() {
     onWin();
 }
 
-function insertLetter(pressedKey) {
-    if (guesses[active_guess].length === WORD_LENGTH) {
+function setLetter(pressedKey) {
+    setLetterAtPos(pressedKey, ROW, COL);
+}
+
+function setLetterAtPos(pressedKey, row, col) {
+    pressedKey = pressedKey.toUpperCase()
+    if (pressedKey === " ") {
         return
     }
-    pressedKey = pressedKey.toUpperCase()
-
-    // let row = document.getElementsByClassName("letter-row")[active_guess]
-    // let box = row.children[guesses[active_guess].length]
-    // animateCSS(box, "pulse")
-    // box.textContent = pressedKey
-    // box.classList.add("filled-box")
-    let box = unsafeInsertLetter(pressedKey, active_guess, guesses[active_guess].length)
+    let box = unsafeSetLetter(pressedKey, row, col)
     animateCSS(box, "pulse")
-    guesses[active_guess].push(pressedKey);
+    guesses[row] = guesses[row].substring(0, col) + pressedKey + guesses[row].substring(col + 1);
     setCookieData();
-    if (guesses[active_guess].length === WORD_LENGTH) {
-        nextGuess()
-    }
 }
 
 function unsafeInsertLetterFromGuesses() {
     for (let i = 0; i < guesses.length; i++) {
         for (let j = 0; j < guesses[i].length; j++) {
-            unsafeInsertLetter(guesses[i][j].toUpperCase(), i, j);
+            unsafeSetLetter(guesses[i].charAt(j).toUpperCase(), i, j);
         }
     }
-
 }
 
-function unsafeInsertLetter(key, index, position) {
+function unsafeSetLetter(key, index, position) {
     let row = document.getElementsByClassName("letter-row")[index]
     let box = row.children[position]
     box.textContent = key
@@ -468,33 +409,37 @@ document.addEventListener("keyup", (e) => {
 
     let pressedKey = String(e.key);
     if (pressedKey === "Backspace") {
-        if (guesses[active_guess].length !== 0) {
-            deleteLetter();
-            updateActiveCell();
-            return;
-        } else {
-            prevGuess();
-            updateActiveCell();
-            return;
-        }
+        deleteLetter();
+        return;
     }
 
     if (pressedKey === "ArrowUp") {
-        prevGuess();
-        updateActiveCell();
+        decrementRow();
         return;
     }
     if (pressedKey === "ArrowDown") {
-        nextGuess();
-        updateActiveCell();
+        incrementRow();
         return;
     }
+    if (pressedKey === "ArrowLeft") {
+        decrementCell();
+        return;
+    }
+    if (pressedKey === "ArrowRight" ) {
+        incrementCell();
+        return;
+    }
+    if (pressedKey === "Enter") {
+        incrementToNextBlank();
+        return;
+    }
+
     let found = pressedKey.match(/[a-z]/gi)
     if (!found || found.length > 1) {
         return;
     } else {
-        insertLetter(pressedKey)
-        updateActiveCell();
+        setLetter(pressedKey);
+        incrementToNextBlank();
     }
     checkGuesses();
 });
@@ -511,7 +456,7 @@ document.getElementById("keyboard-cont").addEventListener("click", (e) => {
         key = "Backspace"
     }
     else if (key === "↵") {
-        key = "ArrowDown"
+        key = "Enter"
     }
 
     document.dispatchEvent(new KeyboardEvent("keyup", { 'key': key, 'code': "virtual" }));
@@ -781,10 +726,12 @@ let prevClueButton = document.getElementById("prev-clue-button");
 let nextClueButton = document.getElementById("next-clue-button");
 
 prevClueButton.addEventListener("click", (e) => {
-    prevGuess();
+    decrementRow();
+    setActiveCell(ROW, 0);
     updateActiveCell();
 });
 nextClueButton.addEventListener("click", (e) => {
-    nextGuess();
+    incrementRow();
+    setActiveCell(ROW, 0);
     updateActiveCell();
 });

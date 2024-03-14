@@ -24,6 +24,9 @@
 }
 
 body {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
     background-color: var(--bg);
     color: var(--font-color);
 }
@@ -31,7 +34,9 @@ body {
     height: 36px;
 }
 #game-board {
-    height: calc(100vh - 36px - 147px - 30px - 16px);
+    position: fixed;;
+    height: calc(var(--board-h) + 20px);
+    width: 100%;
     user-select: none;
 }
 #clue-wrapper {
@@ -165,7 +170,6 @@ h1 {
     justify-content: center;
     align-items: center;
     text-transform: uppercase;
-    pointer-events: none;
     /* font-size set to 65% of actual div width */ /* for now fill it */
     font-size: min(calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length))),calc((98vw / var(--word-length)) - (2px * var(--word-length))));
     height: calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length)));
@@ -181,7 +185,6 @@ h1 {
 
 .filled-box {
     border: 2px solid black;
-    pointer-events: none;
 }
 
 #clue-wrapper {
