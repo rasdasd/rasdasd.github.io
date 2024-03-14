@@ -18,7 +18,7 @@
 
 
     /* BOARD */
-    --board-h: calc(100dvh - 36px - 147px - 30px - 36px);
+    --board-h: calc(100dvh - 40px - 147px - 30px - 36px);
     --cycle-length: 10;
     --word-length: 10;
 }
@@ -28,13 +28,14 @@ body {
     color: var(--font-color);
 }
 .title-header {
-    height: 36px;
+    height: 40px;
 }
 #game-board {
-    position: fixed;;
+    position: fixed;
+    top: calc(40px + 16px);
     left: 50%;
     transform: translateX(-50%);
-    height: calc(var(--board-h) + 20px);
+    height: var(--board-h);
     user-select: none;
 }
 #clue-wrapper {
