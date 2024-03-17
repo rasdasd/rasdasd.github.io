@@ -24,7 +24,7 @@
     /* HEIGHTS */
     
     --header-h: 40px;
-    --keyboard-h: 147px;
+    --keyboard-h: 186px;
     --clue-h: 38px;
     --bottom-h: calc(var(--keyboard-h) + var(--clue-h));
     
@@ -226,7 +226,7 @@ h2 {
 
 }
 .keyboard-button.aux-button.delete{
-    align-items: baseline;
+    align-items: end;
 }
 
 .half-grow {
@@ -241,7 +241,7 @@ h2 {
     /* adjusted for consistency with new setup */
     margin: 2px;
     /* adjusted margin for better spacing */
-    height: 45px;
+    height: 58px;
     /* adjusted for consistency with new setup */
     border-radius: 4px;
     /* adjusted for consistency with new setup */
