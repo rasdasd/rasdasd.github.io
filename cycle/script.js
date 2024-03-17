@@ -14,8 +14,6 @@ const MIN_DELTA = 0;
 const MAX_DELTA = CYCLE.length - 1;
 const DAY = 1000 * 60 * 60 * 24;
 const date_display_options = {
-    weekday: 'short',
-    year: 'numeric',
     month: 'short',
     day: 'numeric',
 };
@@ -41,7 +39,7 @@ if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
     COOKIE_DATA.guesses[INDEX] = [];
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         // blank_word is WORD_LENGTH spaces
-        let blank_word = Array(WORD_LENGTH).fill(" ").join("");
+        let blank_word = Array(WORD_LENGTH).fill("A").join("");
         COOKIE_DATA.guesses[INDEX].push(blank_word);
     }
 }
@@ -147,12 +145,9 @@ function initBoard(index) {
     while (board.firstChild) {
         board.removeChild(board.firstChild);
     }
-    let col1 = document.createElement("div");
-    col1.className = "col-6";
-    col1.classList.add("touchable-col");
-    col1.classList.add("play-col");
-    col1.id = "answer-row";
-    board.appendChild(col1);
+    let root = document.querySelector(":root");
+    root.style.setProperty("--cycle-length", CYCLE_LENGTH);
+    root.style.setProperty("--word-length", WORD_LENGTH);
 
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         let row = document.createElement("div")
@@ -161,15 +156,11 @@ function initBoard(index) {
         for (let j = 0; j < WORD_LENGTH; j++) {
             let box = document.createElement("div")
             box.className = "letter-box"
-            box.classList.add(`count${CYCLE_LENGTH}`)
             row.appendChild(box)
         }
-        col1.appendChild(row)
+        board.appendChild(row)
     }
-    let root = document.querySelector(":root");
-    root.style.setProperty("--cycle-length", CYCLE_LENGTH);
-    root.style.setProperty("--word-length", WORD_LENGTH);
-
+    
     // on mouseclick or touch, change the active guess
     document.querySelectorAll(".letter-box").forEach(cell => {
         cell.addEventListener("click", changeActiveGuessOnClick);
@@ -318,7 +309,7 @@ function deleteLetter() {
     }
     let row = document.getElementsByClassName("letter-row")[ROW]
     let box = row.children[COL]
-    box.textContent = ""
+    box.textContent = " "
     box.classList.remove("filled-box")
     guesses[ROW] = guesses[ROW].substring(0, COL) + " " + guesses[ROW].substring(COL + 1);
     setCookieData();

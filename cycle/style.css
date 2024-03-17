@@ -18,32 +18,70 @@
 
 
     /* BOARD */
-    --board-h: calc(100dvh - 40px - 147px - 30px - 36px);
     --cycle-length: 10;
     --word-length: 10;
+
+    /* HEIGHTS */
+    
+    --header-h: 40px;
+    --keyboard-h: 147px;
+    --clue-h: 38px;
+    --bottom-h: calc(var(--keyboard-h) + var(--clue-h));
+    
+    /* PADDING */
+    --board-padding: 10px;
+
 }
 
 body {
     background-color: var(--bg);
     color: var(--font-color);
+    margin: 0;
 }
+
 .title-header {
-    height: 40px;
+    height: var(--header-h);
+    width: 100%;
 }
-#game-board {
+#game-wrapper {
+    user-select: none;
     position: fixed;
-    top: calc(40px + 16px);
+    top: var(--header-h);
+    bottom: var(--bottom-h);
+    width: 100%;
+    max-width: 500px;
+    max-height: 500px;
     left: 50%;
     transform: translateX(-50%);
-    height: var(--board-h);
-    user-select: none;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
 }
+#game-board {
+    padding: var(--board-padding);
+    height: calc(100% - 2 * var(--board-padding) - ((var(--cycle-length) - 1) * 5px));
+    max-width: 100%;
+    aspect-ratio: var(--word-length) / var(--cycle-length);
+    display: grid;
+    gap: 5px;
+    grid-template-rows: repeat(var(--cycle-length), 1fr);
+}
+.letter-row {
+    display: grid;
+    grid-template-columns: repeat(var(--word-length), 1fr);
+    gap: 2px;
+    aspect-ratio: var(--word-length) / 1;
+
+}
+
 #clue-wrapper {
-    height: 30px;
+    height: var(--clue-h);
     user-select: none;
 }
 #keyboard-cont {
-    height: 147px;
+    height: var(--keyboard-h);
     user-select: none;
 }
 #bottom-wrapper {
@@ -85,14 +123,6 @@ body {
     flex: 0 0 10%;
 }
 
-h1 {
-    text-align: center;
-    font-size: 1rem;
-    margin: 0;
-    padding: 0px;
-    padding-bottom: 5px;
-    flex-grow: 1;
-}
 
 .small-button-wrapper {
     display: flex;
@@ -108,36 +138,11 @@ h1 {
 }
 
 
-#date {
+h2 {
     font-size: 1rem;
     text-align: center;
     width: 100%;
     margin: 0;
-}
-
-#game-board {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-}
-
-.col-6 {
-    display: flex;
-    flex-direction: column;
-}
-
-#answer-row {
-    flex-grow: 1;
-    justify-content: center;
-}
-
-
-.letter-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin: 4px 0;
 }
 
 .active-box {
@@ -161,37 +166,37 @@ h1 {
 }
 
 .letter-box {
-    border: 2px solid gray;
+    border: 2px solid black;
     border-radius: 3px;
-    margin: 2px;
     font-weight: 700;
+    font-size: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
     text-transform: uppercase;
-    /* font-size set to 65% of actual div width */ /* for now fill it */
-    font-size: min(calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length))),calc((98vw / var(--word-length)) - (2px * var(--word-length))));
-    height: calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length)));
-    width: calc((var(--board-h) / var(--cycle-length)) - (2px * var(--cycle-length)));
-    max-width: calc((98vw / var(--word-length)) - (2px * var(--word-length)));
-    max-height: calc((98vw / var(--word-length)) - (2px * var(--word-length)));
 }
 
+@media (max-width: 200px), (max-height: 600px) {
+    .letter-box {
+        font-size: 1rem;
+    }
+}
+.letter-box::before {
+    content: "";
+    display: inline-block;
+    padding-bottom: 100%;
+}
 
 .dark-mode .letter-box {
     border: 2px solid var(--border-color-dark);
 }
 
-.filled-box {
-    border: 2px solid black;
-}
 
 #clue-wrapper {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 4px;
 }
 
 #clue {
@@ -201,10 +206,6 @@ h1 {
 }
 
 #keyboard-cont {
-    /* position: fixed;
-    bottom: 0;
-    left: 1vw;
-    width: 98vw; */
     display: flex;
     flex-direction: column;
     align-items: center;
