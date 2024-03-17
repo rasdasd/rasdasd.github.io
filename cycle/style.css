@@ -220,13 +220,11 @@ h2 {
 .keyboard-button.aux-button {
     flex: 2;
     max-width: 118px;
+    line-height: 100%;
 }
 .keyboard-button.aux-button.enter{
     font-size: min(8vw, 2rem);
 
-}
-.keyboard-button.aux-button.delete{
-    align-items: end;
 }
 
 .half-grow {
