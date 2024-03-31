@@ -1,6 +1,7 @@
 const n = 20;
 const TIME = 180;
-const SEASONS = seasons;
+// SEASONS set to the first 40 elements of the seasons array
+const SEASONS = seasons.slice(0, 40);
 let sortable = null;
 let started = false;
 // get hours, minutes and seconds from the time
@@ -15,21 +16,21 @@ function getImage(index) {
 }
 
 function shuffleArray(array) {
-    for (var i = array.length - 1; i > 0; i--) { 
-   
+    for (var i = array.length - 1; i > 0; i--) {
+
         // Generate random number 
         var j = Math.floor(Math.random() * (i + 1));
-                   
+
         var temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
-       
+
     return array;
- }
+}
 
 // Shuffle the logos randomly
-const shuffledLogos = shuffleArray([...Array(seasons.length).keys()]).slice(0, n);
+const shuffledLogos = shuffleArray([...Array(SEASONS.length).keys()]).slice(0, n);
 const correctOrder = shuffledLogos.slice().sort((a, b) => a - b);
 // console.log(...shuffledLogos);
 // console.log(...correctOrder);
@@ -52,10 +53,10 @@ function showResults() {
         const item = items.children[i];
         const finalItem = finalItems.children[i];
         if (item.id === finalItem.id) {
-            item.classList.add("correct");
+            finalItem.classList.add("correct");
             correct++;
         } else {
-            item.classList.add("wrong");
+            finalItem.classList.add("wrong");
         }
     }
 }
@@ -70,11 +71,11 @@ function initTimer() {
         onSubmit();
     });
     myTimer.start({
-        countdown: true, 
-        startValues:{seconds: TIME},
-        target:{seconds: 0},
+        countdown: true,
+        startValues: { seconds: TIME },
+        target: { seconds: 0 },
     });
-    
+
 }
 
 // Function to start the game
@@ -107,6 +108,10 @@ function initBoard() {
         const finalImg = document.createElement("img");
         finalImg.setAttribute("src", getImage(correctOrder[i]));
         finalImgContainer.appendChild(finalImg);
+        const finalText = document.createElement("span");
+        let seasonName = SEASONS[correctOrder[i]].split("Survivor")[1].substring(1).trim();
+        finalText.innerHTML = "Season " + (correctOrder[i] + 1) + ": " + seasonName;
+        finalImgContainer.appendChild(finalText);
         finalItem.appendChild(finalImgContainer);
         finalItems.appendChild(finalItem);
     }
@@ -120,6 +125,11 @@ function initBoard() {
 }
 
 initBoard();
+
+$(document).on('contextmenu', function (e) {
+    // stop long touch hold from poping up context menus
+    return false;
+});
 
 // Start the game on start-button being clicked
 document.getElementById("start-button").addEventListener("click", startGame);

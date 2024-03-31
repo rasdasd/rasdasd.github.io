@@ -1,38 +1,87 @@
 /* Style for index.html */
 
 .hidden {
-  display: none;
+    display: none;
 }
 
 #header {
-    height: 30px;
+    height: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
+    padding: 5px 20px;
     background-color: #0092F3;
     color: white;
     /* text not selectable */
     user-select: none;
+    font-size: 2rem;
 }
 
 li {
     list-style-type: none;
-    display: inline-block;
     width: 100%;
     aspect-ratio: 4/3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#final-items li {
+    list-style-type: none;
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: inline-block;
 }
 
 #reg-logo {
     width: 40px !important;
 }
 
+button {
+    box-sizing: border-box;
+    padding: 2px;
+    font-size: 1.5rem;
+    width: 200px;
+    cursor: pointer;
+    border: 3px solid white;
+    background-color: black;
+    color: white;
+    border-radius: 5px;
+}
+
 img {
     width: 100%;
 }
 
-.image-container {
+.img-container {
     width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+.img-container span {
+    position: relative;
+    bottom: 0px;
+    font-size: 1.3em;
+    height: 25px;
+    padding: 0px 4px;
+    margin: 0px 0px;
+    color: black;
+    text-align: center;
+    background-color: #0092F3;
+    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.correct span {
+    background-color: lightgreen;
+}
+
+.wrong span {
+    background-color: lightcoral;
 }
 
 #final-items img {
@@ -46,21 +95,29 @@ img {
 
 ul {
     position: absolute;
-    top: 60px;
+    top: 50px;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 24px);
+    width: 100%;
     margin: 0px;
     padding: 0px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     /* grid-template-rows: repeat(auto-fit, minmax(200px, 1fr)); */
     /* overflow: hidden; */
-    gap: 8px;
+    gap: 6px;
 }
 
+
+
 body {
+    padding: 0;
+    margin: 0;
     /* overflow: hidden; */
+}
+
+#timer {
+    font-size: 40px;
 }
 
 .correct {
