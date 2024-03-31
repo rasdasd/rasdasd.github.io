@@ -6,4 +6,6 @@
 
 [Word Cycle](http://rasdasd.github.io/cycle)
 
+[Survivor Logo Game](http://rasdasd.github.io/suvivor)
+
 [LIVE SITE](https://rasdasd.github.io)
