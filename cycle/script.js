@@ -1,6 +1,6 @@
 import { CYCLE } from "./cycles.js";
 const DEFAULT_COOKIE_DATA = {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "settings": {
         "virtual_keyboard_input_only": false,
         "dark_mode": false,
