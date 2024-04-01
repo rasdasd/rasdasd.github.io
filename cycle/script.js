@@ -1,6 +1,6 @@
 import { CYCLE } from "./cycles.js";
 const DEFAULT_COOKIE_DATA = {
-    "version": "1.1.0",
+    "version": "0.1.0",
     "settings": {
         "virtual_keyboard_input_only": false,
         "dark_mode": false,
@@ -39,7 +39,7 @@ if (!COOKIE_DATA.guesses.hasOwnProperty(INDEX)) {
     COOKIE_DATA.guesses[INDEX] = [];
     for (let i = 0; i < CYCLE_LENGTH; i++) {
         // blank_word is WORD_LENGTH spaces
-        let blank_word = Array(WORD_LENGTH).fill("A").join("");
+        let blank_word = Array(WORD_LENGTH).fill(" ").join("");
         COOKIE_DATA.guesses[INDEX].push(blank_word);
     }
 }
