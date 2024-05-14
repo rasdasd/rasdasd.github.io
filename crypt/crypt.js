@@ -1,11 +1,25 @@
+var last_event = null;
+
+function update_scale() {
+    if (last_event) {
+        processImage(last_event);
+    }
+}
+
 // implement processImage
 function processImage(event) {
+    // get scale, must be int
+    let scale = parseInt(document.getElementById('scale').value);
+    if (isNaN(scale) || scale < 2) {
+        scale = 2;
+    }
     // get file
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.onload = function(e) {
         const img = document.getElementById('image');
         img.src = e.target.result;
+        last_event = event;
         img.onload = function() {
             // get image data
             const canvas = document.createElement('canvas');
@@ -16,7 +30,7 @@ function processImage(event) {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
             // process image
-            const out = process(imageData);
+            const out = process(imageData, scale);
             const out1 = out[0];
             const out2 = out[1];
 
@@ -53,17 +67,17 @@ const permsOpacity = [
 // example: orig(1,1) is out1(2,2), out1(2,3), out1(3,2), out1(3,3)
 // out1 will be the same as the input image
 // out2 will be the same as the input image, but with the red channel inverted
-function process(imageData) {
+function process(imageData, scale) {
     // Process image data
-    const out1 = new ImageData(imageData.width * 2, imageData.height * 2);
-    const out2 = new ImageData(imageData.width * 2, imageData.height * 2);
+    const out1 = new ImageData(imageData.width * scale, imageData.height * scale);
+    const out2 = new ImageData(imageData.width * scale, imageData.height * scale);
 
     // Loop through each pixel in the original image
     for (let y = 0; y < imageData.height; y++) {
         for (let x = 0; x < imageData.width; x++) {
             // Calculate coordinates in out1 and out2 for the current pixel
-            const outX = x * 2;
-            const outY = y * 2;
+            const outX = x * scale;
+            const outY = y * scale;
             
             // Get the index of the current pixel in the original image
             const originalIndex = (y * imageData.width + x) * 4;
@@ -81,13 +95,25 @@ function process(imageData) {
             let permj = 0;
             for (let offsetY = 0; offsetY < 2; offsetY++) {
                 for (let offsetX = 0; offsetX < 2; offsetX++) {
-                    const outIndex = ((outY + offsetY) * out1.width + (outX + offsetX)) * 4;
-                    for (let i = 0; i < 3; i++) {
-                        out1.data[outIndex + i] = 0;
-                        out2.data[outIndex + i] = 0;
+                    // const outIndex = ((outY + offsetY) * out1.width + (outX + offsetX)) * 4;
+                    // get all out index in this "block".
+                    // If scale is 2, there is 1 pixel
+                    // if scale is 4, there are 4 pixels
+                    // if scale is 8, there are 16 pixels, etc.
+                    const outIndexes = [];
+                    for (let i = 0; i < scale; i++) {
+                        for (let j = 0; j < scale; j++) {
+                            outIndexes.push(((outY + offsetY * scale + i) * out1.width + (outX + offsetX * scale + j)) * 4);
+                        }
                     }
-                    out1.data[outIndex + 3] = permsOpacity[permi][permj];
-                    out2.data[outIndex + 3] = permsOpacity[permi2][permj];
+                    for (let outIndex of outIndexes) {
+                        for (let i = 0; i < 3; i++) {
+                            out1.data[outIndex + i] = 0;
+                            out2.data[outIndex + i] = 0;
+                        }
+                        out1.data[outIndex + 3] = permsOpacity[permi][permj];
+                        out2.data[outIndex + 3] = permsOpacity[permi2][permj];
+                    }
                     permj++;
                 }
             }

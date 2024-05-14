@@ -16,6 +16,8 @@
     <!-- INPUT IMAGE FROM UPLOAD -->
     <div>
         <input type="file" id="file" accept="image/*" onchange="processImage(event)">
+        <!-- scale factor number input -->
+        <input type="number" id="scale" value="2" step="1" min="2" max="40" onchange="update_scale()">
     </div>
     <!-- diplay uploaded or url image -->
     <img id="image" src="" alt="Image">
