@@ -1,0 +1,28 @@
+body .overlay{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 0;
+    gap: 10px;
+}
+
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.active {
+    position: relative;
+}
+
+.active img {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#out1 {
+    z-index: -1;
+}

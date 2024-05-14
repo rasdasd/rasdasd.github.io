@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Processing</title>
+    <script src="crypt.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+        // toggle overlay "active"
+        function toggleOverlay() {
+            var overlay = document.querySelector('.overlay');
+            overlay.classList.toggle('active');
+        }
+    </script>
+</head>
+<body>
+    <!-- INPUT IMAGE FROM UPLOAD -->
+    <div>
+        <input type="file" id="file" accept="image/*" onchange="processImage(event)">
+    </div>
+    <!-- diplay uploaded or url image -->
+    <img id="image" src="" alt="Image">
+
+    <!-- button to toggle overlay class "active"-->
+    <button id="toggle" onclick="toggleOverlay()">Toggle</button>
+
+    <!-- POST IMAGE PROCESSING DISPLAY -->
+    <!-- we will display out1 and out2 -->
+    <div class="overlay">
+        <img id="out1" src="" alt="Out1">
+        <img id="out2" src="" alt="Out2">
+    </div>
+</body>
+</html>

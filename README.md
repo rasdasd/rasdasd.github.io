@@ -8,4 +8,7 @@
 
 [Survivor Logo Game](http://rasdasd.github.io/suvivor)
 
+[Visual Cryptography](http://rasdasd.github.io/crypt)
+
+
 [LIVE SITE](https://rasdasd.github.io)
