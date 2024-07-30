@@ -1,12 +1,1 @@
-body {
-    margin: 0;
-    overflow: hidden;
-}
-canvas {
-    display: block;
-}
-.image {
-    width: 50px;
-    height: 50px;
-    background-size: cover;
-}
+canvas{display:block;position:fixed;top:0;left:0}#page{z-index:unset!important}footer{z-index:unset!important}

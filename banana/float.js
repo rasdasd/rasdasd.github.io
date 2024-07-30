@@ -1,17 +1,19 @@
-const { Engine, Render, Runner, World, Bodies, Body, Mouse, MouseConstraint, Events, Composite } = Matter;
+document.addEventListener('DOMContentLoaded', () => {
+const { Engine, Render, Runner, World, Bodies, Body, Events, Composite } = Matter;
 
 const engine = Engine.create();
 engine.world.gravity.y = 0; // Set gravity to zero for microgravity effect
 const world = engine.world;
-
+const parent = document.body;
 const render = Render.create({
-    element: document.body,
+    element: parent,
     engine: engine,
     options: {
         width: window.innerWidth,
         height: window.innerHeight,
         wireframes: false,
-        background: '#FFF'
+        background: 'transparent'
+
     }
 });
 
@@ -19,25 +21,27 @@ Render.run(render);
 const runner = Runner.create();
 Runner.run(runner, engine);
 
+
 // Function to create a new image body
 const createImage = (x, y) => {
     const angleRad = Math.random() * 2 * Math.PI;
-    const image = Bodies.rectangle(x, y, 50, 50, {
+    const image = Bodies.rectangle(x, y, 70, 40, {
         render: {
             sprite: {
                 texture: 'banana.png',
-                xScale: 0.25,
-                yScale: 0.25
+                xScale: 1,
+                yScale: 1
             }
         },
         restitution: 1,
         friction: 0,
         frictionAir: 0, // Increase friction air to slow down movement
+        frictionStatic: 0,
         angle: angleRad
     });
 
     Body.setAngularVelocity(image, Math.random() * 0.02 - 0.01); // Reduce angular velocity for slower rotation
-    const forceMagnitude = 0.001 * image.mass; // Adjust force magnitude for slower reaction
+    const forceMagnitude = 0.01 * image.mass; // Adjust force magnitude for slower reaction
     const angle = angleRad;
     Body.applyForce(image, image.position, {
         x: forceMagnitude * Math.cos(angle),
@@ -48,12 +52,14 @@ const createImage = (x, y) => {
 };
 
 // Add initial images
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 7; i++) {
     createImage(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
 }
 
 // Add screen boundary walls
 const addBoundaryWalls = () => {
+    // clear old walls
+    world.bodies = world.bodies.filter(body => !body.isStatic);
     const thickness = 50; // Make the boundary walls thick enough to avoid clipping issues
     const walls = [
         Bodies.rectangle(window.innerWidth / 2, -thickness / 2, window.innerWidth, thickness, { isStatic: true }),
@@ -66,43 +72,6 @@ const addBoundaryWalls = () => {
 
 addBoundaryWalls();
 
-// Mouse control
-const mouse = Mouse.create(render.canvas);
-const mouseConstraint = MouseConstraint.create(engine, {
-    mouse: mouse,
-    constraint: {
-        stiffness: 0.2,
-        render: {
-            visible: false
-        }
-    }
-});
-
-World.add(world, mouseConstraint);
-
-// Add image on click or touch
-const addImage = (event) => {
-    const posX = event.clientX || event.touches[0].clientX;
-    const posY = event.clientY || event.touches[0].clientY;
-    createImage(posX, posY);
-    pushAwayImages(posX, posY);
-};
-
-// Push images away from the point of interaction
-const pushAwayImages = (x, y) => {
-    const bodies = Composite.allBodies(world);
-    bodies.forEach(body => {
-        const forceMagnitude = 0.001 * body.mass; // Adjust force magnitude for slower reaction
-        const angle = Math.atan2(body.position.y - y, body.position.x - x);
-        Body.applyForce(body, body.position, {
-            x: forceMagnitude * Math.cos(angle),
-            y: forceMagnitude * Math.sin(angle)
-        });
-    });
-};
-
-render.canvas.addEventListener('mousedown', addImage);
-render.canvas.addEventListener('touchstart', addImage);
 
 // Keep images bouncing and rotating
 Events.on(engine, 'beforeUpdate', () => {
@@ -114,4 +83,16 @@ Events.on(engine, 'beforeUpdate', () => {
             y: (Math.random() - 0.5) * 0.0001
         });
     });
+});
+
+// Resize canvas on window resize
+window.addEventListener('resize', () => {
+    render.canvas.width = window.innerWidth;
+    render.canvas.height = window.innerHeight;
+    render.bounds.max.x = window.innerWidth;
+    render.bounds.max.y = window.innerHeight;
+    render.options.clientWidth = window.innerWidth;
+    render.options.clientHeight = window.innerHeight;
+    addBoundaryWalls();
+});
 });
