@@ -1,3 +1,111 @@
 <style>canvas{display:block;position:fixed;top:0;left:0;pointer-events:none;}#page{z-index:unset!important}footer{z-index:unset!important}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-<script>document.addEventListener("DOMContentLoaded",()=>{let{Engine:e,Render:n,Runner:i,World:t,Bodies:r,Body:a,Events:o,Composite:d}=Matter,l=e.create();l.world.gravity.y=0;let $=l.world,c=document.body,s=n.create({element:c,engine:l,options:{width:window.innerWidth,height:window.innerHeight,wireframes:!1,background:"transparent"}});n.run(s);let h=i.create();i.run(h,l);let g=(e,n)=>{let i=2*Math.random()*Math.PI,o=r.rectangle(e,n,70,40,{render:{sprite:{texture:"https://raw.githubusercontent.com/rasdasd/rasdasd.github.io/master/banana/banana.png",xScale:1,yScale:1}},restitution:1,friction:0,frictionAir:0,frictionStatic:0,angle:i});a.setAngularVelocity(o,.02*Math.random()-.01);let d=.01*o.mass,l=i;return a.applyForce(o,o.position,{x:d*Math.cos(l),y:d*Math.sin(l)}),t.add($,o),o};for(let p=0;p<7;p++)g(Math.random()*window.innerWidth,Math.random()*window.innerHeight);let y=()=>{$.bodies=$.bodies.filter(e=>!e.isStatic);let e=[r.rectangle(window.innerWidth/2,-25,window.innerWidth,50,{isStatic:!0}),r.rectangle(window.innerWidth/2,window.innerHeight+25,window.innerWidth,50,{isStatic:!0}),r.rectangle(-25,window.innerHeight/2,50,window.innerHeight,{isStatic:!0}),r.rectangle(window.innerWidth+25,window.innerHeight/2,50,window.innerHeight,{isStatic:!0})];t.add($,e)};y(),o.on(l,"beforeUpdate",()=>{let e=d.allBodies($);e.forEach(e=>{a.setAngularVelocity(e,.99*e.angularVelocity),a.applyForce(e,e.position,{x:(Math.random()-.5)*1e-4,y:(Math.random()-.5)*1e-4})})}),window.addEventListener("resize",()=>{s.canvas.width=window.innerWidth,s.canvas.height=window.innerHeight,s.bounds.max.x=window.innerWidth,s.bounds.max.y=window.innerHeight,s.options.clientWidth=window.innerWidth,s.options.clientHeight=window.innerHeight,y()})});</script>
+<script>document.addEventListener('DOMContentLoaded', () => {
+    const { Engine, Render, Runner, World, Bodies, Body, Events, Composite } = Matter;
+    const desktop_scale = 0.5;
+    const mobile_scale = 0.5;
+    const engine = Engine.create();
+    engine.world.gravity.y = 0; // Set gravity to zero for microgravity effect
+    const world = engine.world;
+    const parent = document.body;
+    const render = Render.create({
+        element: parent,
+        engine: engine,
+        options: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            wireframes: false,
+            background: 'transparent'
+        }
+    });
+    Render.run(render);
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+    // Function to create a new image body
+    const createImage = (x, y) => {
+        const angleRad = Math.random() * 2 * Math.PI;
+        const image = Bodies.rectangle(x, y, 50, 30, {
+            render: {
+                sprite: {
+                    texture: 'https://raw.githubusercontent.com/rasdasd/rasdasd.github.io/master/banana/banana.png',
+                    xScale: 1,
+                    yScale: 1
+                }
+            },
+            restitution: 1,
+            friction: 0,
+            frictionAir: 0, // Increase friction air to slow down movement
+            frictionStatic: 0,
+            angle: angleRad
+        });
+        Body.setAngularVelocity(image, Math.random() * 0.02 - 0.01); // Reduce angular velocity for slower rotation
+        const forceMagnitude = 0.01 * image.mass; // Adjust force magnitude for slower reaction
+        const angle = angleRad;
+        Body.applyForce(image, image.position, {
+            x: forceMagnitude * Math.cos(angle),
+            y: forceMagnitude * Math.sin(angle)
+        });
+        World.add(world, image);
+        return image;
+    };
+    // Function to resize all images
+    const resizeBananas = () => {
+        const bodies = Composite.allBodies(world);
+        bodies.forEach(body => {
+            // if not static
+            if (!body.isStatic) {
+                // if mobile device
+                if (window.innerWidth < 768) {
+                    // set scale to 0.5
+                    body.render.sprite.xScale = mobile_scale;
+                    body.render.sprite.yScale = mobile_scale;
+                } else {
+                    // set scale to 1
+                    body.render.sprite.xScale = desktop_scale;
+                    body.render.sprite.yScale = desktop_scale;
+                }
+            }
+        });
+    };
+    // Add initial images
+    for (let i = 0; i < 12; i++) {
+        createImage(Math.random() * window.innerWidth, Math.random() * window.innerHeight);
+    }
+    resizeBananas();
+    // Add screen boundary walls
+    const addBoundaryWalls = () => {
+        // clear old walls
+        world.bodies = world.bodies.filter(body => !body.isStatic);
+        const thickness = 50; // Make the boundary walls thick enough to avoid clipping issues
+        const walls = [
+            Bodies.rectangle(window.innerWidth / 2, -thickness / 2, window.innerWidth, thickness, { isStatic: true }),
+            Bodies.rectangle(window.innerWidth / 2, window.innerHeight + thickness / 2, window.innerWidth, thickness, { isStatic: true }),
+            Bodies.rectangle(-thickness / 2, window.innerHeight / 2, thickness, window.innerHeight, { isStatic: true }),
+            Bodies.rectangle(window.innerWidth + thickness / 2, window.innerHeight / 2, thickness, window.innerHeight, { isStatic: true })
+        ];
+        World.add(world, walls);
+    };
+    addBoundaryWalls();
+    // Keep images bouncing and rotating
+    Events.on(engine, 'beforeUpdate', () => {
+        const bodies = Composite.allBodies(world);
+        bodies.forEach(body => {
+            Body.setAngularVelocity(body, body.angularVelocity * 0.99); // Dampen angular velocity
+            Body.applyForce(body, body.position, {
+                x: (Math.random() - 0.5) * 0.0001, // Reduce random forces for slower movement
+                y: (Math.random() - 0.5) * 0.0001
+            });
+        });
+    });
+    // Resize canvas on window resize
+    window.addEventListener('resize', () => {
+        render.canvas.width = window.innerWidth;
+        render.canvas.height = window.innerHeight;
+        render.bounds.max.x = window.innerWidth;
+        render.bounds.max.y = window.innerHeight;
+        render.options.clientWidth = window.innerWidth;
+        render.options.clientHeight = window.innerHeight;
+        addBoundaryWalls();
+        resizeBananas();
+    });
+});</script>
