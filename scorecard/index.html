@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FanCheck App Prototype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons (Alternative to Lucide for HTML) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        /* Custom Animation Utilities */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.3s ease-out forwards; }
+        .slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Touch interaction improvements */
+        .tap-highlight-transparent { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen w-screen overflow-hidden flex justify-center font-sans text-slate-900 selection:bg-blue-100">
+
+    <!-- Mobile Device Container -->
+    <div id="app-container" class="w-full max-w-md h-full bg-white relative shadow-2xl overflow-hidden md:rounded-[2.5rem] md:h-[90vh] md:border-[8px] md:border-slate-800 flex flex-col md:my-auto">
+        
+        <!-- ==================== VIEWS ==================== -->
+
+        <!-- 1. AUTH VIEW -->
+        <div id="auth-view" class="absolute inset-0 z-50 bg-white p-6 flex flex-col justify-between fade-in">
+            <div class="mt-20">
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-blue-500/20">
+                    <i class="ph-fill ph-map-pin text-white text-3xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-slate-900 mb-2">FanCheck</h1>
+                <p class="text-slate-500 text-lg">Track your stadium journey. Prove you were there.</p>
+            </div>
+
+            <div class="space-y-4 mb-8">
+                <button onclick="app.login()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform">
+                    Sign in with Email
+                </button>
+                
+                <div class="relative py-2">
+                    <div class="absolute inset-0 flex items-center"><span class="w-full border-t border-slate-200"></span></div>
+                    <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-slate-400">Or continue with</span></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="app.login()" class="border-2 border-slate-100 font-bold py-3 rounded-xl hover:bg-slate-50 active:scale-95 transition-transform text-slate-700">Google</button>
+                    <button onclick="app.login()" class="border-2 border-slate-100 font-bold py-3 rounded-xl hover:bg-slate-50 active:scale-95 transition-transform text-slate-700">Apple</button>
+                </div>
+                <p class="text-center text-xs text-slate-400 mt-4">By continuing, you agree to our Terms of Service.</p>
+            </div>
+        </div>
+
+        <!-- 2. MAIN APP VIEW -->
+        <div id="main-view" class="flex-1 flex flex-col relative hidden h-full">
+            
+            <!-- Scrollable Content Area -->
+            <div id="content-area" class="flex-1 overflow-y-auto no-scrollbar pb-24 bg-white">
+                <!-- Content injected by JS -->
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div id="bottom-nav" class="bg-white border-t border-slate-100 px-6 py-3 pb-6 absolute bottom-0 w-full z-10 flex justify-between items-center tap-highlight-transparent">
+                <!-- Nav items injected by JS -->
+            </div>
+        </div>
+
+        <!-- 3. EVENT DETAILS OVERLAY -->
+        <div id="event-details-view" class="absolute inset-0 z-40 bg-white hidden flex-col slide-up">
+            <!-- Content injected by JS -->
+        </div>
+
+    </div>
+
+    <!-- ==================== LOGIC ==================== -->
+    <script>
+        // --- DATA ---
+        const LIVE_EVENTS = [
+            { id: 1, home: 'Lakers', away: 'Warriors', hScore: 102, aScore: 98, period: 'Q4 2:30', venue: 'Crypto.com Arena', type: 'NBA' },
+            { id: 2, home: 'Dodgers', away: 'Giants', hScore: 3, aScore: 1, period: 'Bot 7', venue: 'Dodger Stadium', type: 'MLB' },
+            { id: 3, home: 'Galaxy', away: 'LAFC', hScore: 1, aScore: 1, period: '65\'', venue: 'Dignity Health Park', type: 'MLS' },
+        ];
+
+        const UPCOMING_EVENTS = [
+            { id: 4, home: 'Kings', away: 'Oilers', time: 'Tomorrow, 7:00 PM', venue: 'Crypto.com Arena', type: 'NHL' },
+            { id: 5, home: 'UCLA', away: 'USC', time: 'Sat, 12:30 PM', venue: 'Rose Bowl', type: 'NCAA' },
+            { id: 6, home: 'Clippers', away: 'Suns', time: 'Sun, 6:00 PM', venue: 'Intuit Dome', type: 'NBA' },
+        ];
+
+        const PAST_EVENTS = [
+            { id: 101, home: 'Dodgers', away: 'Yankees', score: 'W 4-2', date: 'Oct 25', venue: 'Dodger Stadium', rating: 5, photoCount: 3 },
+            { id: 102, home: 'Rams', away: '49ers', score: 'L 17-24', date: 'Sep 15', venue: 'SoFi Stadium', rating: 3, photoCount: 1 },
+        ];
+
+        // --- APP CONTROLLER ---
+        const app = {
+            state: {
+                currentTab: 'home',
+                selectedEvent: null,
+                checkedIn: false,
+                detailsTab: 'photos',
+                rating: 0,
+                eventsTab: 'upcoming'
+            },
+
+            init() {
+                // Initialize default view logic if needed
+            },
+
+            login() {
+                document.getElementById('auth-view').classList.add('hidden');
+                document.getElementById('main-view').classList.remove('hidden');
+                this.renderTab('home');
+                this.renderNav();
+            },
+
+            // Navigation
+            switchTab(tabName) {
+                this.state.currentTab = tabName;
+                this.renderTab(tabName);
+                this.renderNav();
+            },
+
+            renderNav() {
+                const nav = document.getElementById('bottom-nav');
+                const tabs = [
+                    { id: 'home', icon: 'ph-house', label: 'Home' },
+                    { id: 'search', icon: 'ph-magnifying-glass', label: 'Explore' },
+                    { id: 'myevents', icon: 'ph-calendar-blank', label: 'Events' },
+                    { id: 'profile', icon: 'ph-user', label: 'Profile' }
+                ];
+
+                nav.innerHTML = tabs.map(t => {
+                    const isActive = this.state.currentTab === t.id;
+                    const colorClass = isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600';
+                    const weight = isActive ? 'fill' : 'regular';
+                    
+                    return `
+                        <button onclick="app.switchTab('${t.id}')" class="flex flex-col items-center gap-1 transition-colors ${colorClass}">
+                            <i class="ph-${weight} ${t.icon} text-2xl"></i>
+                            <span class="text-[10px] font-bold">${t.label}</span>
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            // Rendering Tabs
+            renderTab(tabName) {
+                const container = document.getElementById('content-area');
+                container.innerHTML = ''; // Clear content
+                container.className = 'flex-1 overflow-y-auto no-scrollbar pb-24 bg-white slide-in-right'; // Add animation reset
+
+                if (tabName === 'home') this.renderHome(container);
+                if (tabName === 'search') this.renderSearch(container);
+                if (tabName === 'myevents') this.renderMyEvents(container);
+                if (tabName === 'profile') this.renderProfile(container);
+            },
+
+            renderHome(container) {
+                const liveHtml = LIVE_EVENTS.map(e => `
+                    <div onclick="app.openEvent(${e.id})" class="min-w-[280px] bg-slate-900 text-white p-4 rounded-2xl shadow-xl snap-center active:scale-95 transition-transform cursor-pointer">
+                        <div class="flex justify-between text-xs font-medium text-slate-400 mb-4">
+                            <span>${e.type}</span>
+                            <span class="text-red-400 font-bold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ${e.period}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-lg font-bold">${e.home}</span>
+                            <span class="text-2xl font-bold text-blue-400">${e.hScore}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg font-bold">${e.away}</span>
+                            <span class="text-2xl font-bold text-slate-400">${e.aScore}</span>
+                        </div>
+                        <div class="flex items-center text-xs text-slate-400 gap-1">
+                            <i class="ph ph-map-pin"></i> ${e.venue}
+                        </div>
+                    </div>
+                `).join('');
+
+                const upcomingHtml = UPCOMING_EVENTS.map(e => `
+                    <div onclick="app.openEvent(${e.id})" class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex items-center justify-between active:bg-slate-50 transition-colors cursor-pointer">
+                        <div class="flex-1">
+                            <div class="text-xs font-bold text-blue-600 mb-1">${e.type}</div>
+                            <div class="font-bold text-slate-900">${e.home} vs ${e.away}</div>
+                            <div class="text-sm text-slate-500 mt-1 flex items-center gap-1"><i class="ph ph-clock"></i> ${e.time}</div>
+                            <div class="text-sm text-slate-500 flex items-center gap-1"><i class="ph ph-map-pin"></i> ${e.venue}</div>
+                        </div>
+                        <button class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <i class="ph-bold ph-plus"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="px-5 pt-6 flex justify-between items-center mb-6">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Good Evening</p>
+                            <h2 class="text-2xl font-bold text-slate-900">Discover Events</h2>
+                        </div>
+                        <button class="p-2 bg-slate-50 rounded-full text-slate-600"><i class="ph ph-bell text-xl"></i></button>
+                    </div>
+                    
+                    <div class="pl-5 mb-8">
+                        <div class="flex justify-between items-end pr-5 mb-3">
+                            <h3 class="font-bold text-lg flex items-center gap-2">Live Now</h3>
+                            <span class="text-blue-600 text-sm font-medium">View All</span>
+                        </div>
+                        <div class="flex overflow-x-auto gap-4 pb-4 pr-5 snap-x no-scrollbar">
+                            ${liveHtml}
+                        </div>
+                    </div>
+
+                    <div class="px-5">
+                        <h3 class="font-bold text-lg mb-3">Suggested for You</h3>
+                        <div class="space-y-3 pb-8">
+                            ${upcomingHtml}
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderSearch(container) {
+                container.innerHTML = `
+                    <div class="p-5">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-4">Explore</h2>
+                        <div class="relative mb-6">
+                            <input type="text" placeholder="Teams, leagues, or venues..." class="w-full bg-slate-100 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                            <i class="ph ph-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-lg"></i>
+                        </div>
+                        
+                        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-6">
+                            ${['All', 'NBA', 'MLB', 'NFL', 'Soccer', 'Concerts'].map(f => `<button class="px-4 py-2 bg-slate-100 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-200 transition-colors">${f}</button>`).join('')}
+                        </div>
+
+                        <h3 class="font-bold text-slate-900 mb-3">Popular Venues Nearby</h3>
+                        ${[1,2,3].map(i => `
+                            <div class="flex gap-4 mb-4 items-center">
+                                <div class="w-16 h-16 bg-slate-200 rounded-lg flex-shrink-0"></div>
+                                <div>
+                                    <div class="font-bold">Dodger Stadium</div>
+                                    <div class="text-sm text-slate-500">Los Angeles, CA</div>
+                                    <div class="text-xs text-blue-600 mt-1 font-semibold">4 Upcoming Events</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            },
+
+            renderMyEvents(container) {
+                const isUpcoming = this.state.eventsTab === 'upcoming';
+                
+                let content = '';
+                if (isUpcoming) {
+                    content = `
+                        <div class="text-center py-10 fade-in">
+                            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="ph-duotone ph-calendar-blank text-3xl text-slate-300"></i>
+                            </div>
+                            <p class="text-slate-500 mb-4">You have 1 event planned.</p>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm text-left inline-block w-full">
+                                <div class="font-bold text-slate-900">Kings vs Oilers</div>
+                                <div class="text-sm text-slate-500">Tomorrow • 7:00 PM</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content = PAST_EVENTS.map(e => `
+                         <div class="bg-white border border-slate-200 p-4 rounded-xl flex gap-4 fade-in mb-3">
+                           <div class="flex flex-col items-center justify-center w-12 bg-slate-50 rounded-lg p-2 h-14">
+                             <span class="text-xs font-bold text-slate-400">${e.date.split(' ')[0]}</span>
+                             <span class="text-lg font-bold text-slate-900 leading-none">${e.date.split(' ')[1]}</span>
+                           </div>
+                           <div class="flex-1">
+                             <div class="font-bold">${e.home} vs ${e.away}</div>
+                             <div class="text-sm text-slate-500">${e.venue}</div>
+                             <div class="flex items-center gap-1 mt-2">
+                               ${[1,2,3,4,5].map(i => `<i class="ph-fill ph-star text-xs ${i <= e.rating ? 'text-yellow-400' : 'text-slate-200'}"></i>`).join('')}
+                               <span class="text-xs text-slate-400 ml-2">${e.photoCount} Photos</span>
+                             </div>
+                           </div>
+                         </div>
+                    `).join('');
+                }
+
+                container.innerHTML = `
+                    <div class="p-5">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-4">My Events</h2>
+                        <div class="flex bg-slate-100 p-1 rounded-xl mb-6">
+                            <button onclick="app.setEventsTab('upcoming')" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isUpcoming ? 'bg-white shadow text-slate-900' : 'text-slate-500'}">Upcoming</button>
+                            <button onclick="app.setEventsTab('past')" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isUpcoming ? 'bg-white shadow text-slate-900' : 'text-slate-500'}">Past History</button>
+                        </div>
+                        ${content}
+                    </div>
+                `;
+            },
+
+            setEventsTab(tab) {
+                this.state.eventsTab = tab;
+                this.renderTab('myevents');
+            },
+
+            renderProfile(container) {
+                container.innerHTML = `
+                    <div class="bg-slate-900 text-white p-6 pt-10 rounded-b-3xl mb-6 shadow-xl">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-2xl font-bold border-4 border-slate-800">JD</div>
+                            <div>
+                                <h2 class="text-xl font-bold">John Doe</h2>
+                                <p class="text-slate-400 text-sm">Member since 2024</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between gap-4">
+                            <div class="bg-slate-800 p-4 rounded-xl flex-1 text-center">
+                                <div class="text-2xl font-bold text-blue-400">12</div>
+                                <div class="text-xs text-slate-400 uppercase tracking-wide">Events</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl flex-1 text-center">
+                                <div class="text-2xl font-bold text-green-400">5</div>
+                                <div class="text-xs text-slate-400 uppercase tracking-wide">Venues</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-xl flex-1 text-center">
+                                <div class="text-2xl font-bold text-purple-400">48</div>
+                                <div class="text-xs text-slate-400 uppercase tracking-wide">Photos</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-5 space-y-2">
+                        <h3 class="font-bold text-slate-900 mb-2">Account</h3>
+                        <button class="w-full flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <i class="ph ph-gear text-xl text-slate-500"></i>
+                                <span class="font-medium">Settings</span>
+                            </div>
+                            <i class="ph ph-caret-right text-slate-400"></i>
+                        </button>
+                        <button class="w-full flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <i class="ph ph-share-network text-xl text-slate-500"></i>
+                                <span class="font-medium">Share Profile</span>
+                            </div>
+                            <i class="ph ph-caret-right text-slate-400"></i>
+                        </button>
+                    </div>
+                `;
+            },
+
+            // --- EVENT DETAILS LOGIC ---
+
+            openEvent(eventId) {
+                // Find event in either list
+                const event = [...LIVE_EVENTS, ...UPCOMING_EVENTS].find(e => e.id === eventId);
+                this.state.selectedEvent = event;
+                this.state.checkedIn = false;
+                this.state.rating = 0;
+                this.state.detailsTab = 'photos';
+                
+                const view = document.getElementById('event-details-view');
+                view.classList.remove('hidden');
+                this.renderEventDetails();
+            },
+
+            closeEvent() {
+                const view = document.getElementById('event-details-view');
+                view.classList.add('hidden');
+                this.state.selectedEvent = null;
+            },
+
+            checkIn() {
+                this.state.checkedIn = true;
+                this.renderEventDetails();
+            },
+
+            setDetailsTab(tab) {
+                this.state.detailsTab = tab;
+                this.renderEventDetails();
+            },
+
+            setRating(stars) {
+                this.state.rating = stars;
+                this.renderEventDetails();
+            },
+
+            renderEventDetails() {
+                const e = this.state.selectedEvent;
+                const container = document.getElementById('event-details-view');
+                if (!e) return;
+
+                // Render Header
+                const headerHtml = `
+                    <div class="bg-slate-900 text-white p-6 pb-12 relative shrink-0">
+                        <button onclick="app.closeEvent()" class="absolute top-6 left-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors z-10">
+                            <i class="ph ph-caret-left text-2xl"></i>
+                        </button>
+                        <div class="mt-8 text-center">
+                           <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">${e.type} • ${e.venue}</div>
+                           <div class="flex justify-center items-center gap-8 mb-4">
+                             <div class="text-center">
+                               <div class="w-16 h-16 bg-white/10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-xl ring-2 ring-white/10">${e.home.substring(0,3).toUpperCase()}</div>
+                               <div class="font-bold text-2xl">${e.hScore || '-'}</div>
+                             </div>
+                             <div class="text-slate-500 font-bold text-sm">VS</div>
+                             <div class="text-center">
+                               <div class="w-16 h-16 bg-white/10 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-xl ring-2 ring-white/10">${e.away.substring(0,3).toUpperCase()}</div>
+                               <div class="font-bold text-2xl">${e.aScore || '-'}</div>
+                             </div>
+                           </div>
+                           <div class="inline-block px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-bold border border-red-500/30">
+                             ${e.period || e.time}
+                           </div>
+                        </div>
+                    </div>
+                `;
+
+                // Render Action Area (Check in vs Checked In)
+                let actionHtml = '';
+                if (!this.state.checkedIn) {
+                    actionHtml = `
+                        <div class="bg-white rounded-2xl p-6 shadow-xl border border-slate-100 text-center mx-6 -mt-8 relative z-10">
+                            <h3 class="font-bold text-slate-900 text-lg mb-2">Are you at the game?</h3>
+                            <p class="text-slate-500 text-sm mb-6">Check in to unlock photos, ratings, and share your verified attendance card.</p>
+                            <div class="space-y-3">
+                                <button onclick="app.checkIn()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                    <i class="ph-bold ph-map-pin text-xl"></i> I'm Here!
+                                </button>
+                                <button class="w-full bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 active:scale-95 transition-all">
+                                    Plan to Attend
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    actionHtml = `
+                        <div class="bg-green-50 rounded-2xl p-4 shadow-lg border border-green-100 flex items-center justify-between mx-6 -mt-8 relative z-10 fade-in">
+                             <div class="flex items-center gap-3">
+                               <div class="bg-green-500 text-white p-2 rounded-full flex items-center justify-center"><i class="ph-bold ph-check-circle text-xl"></i></div>
+                               <div>
+                                 <div class="font-bold text-green-900">You're Checked In!</div>
+                                 <div class="text-xs text-green-700">Verified at ${e.venue}</div>
+                               </div>
+                             </div>
+                             <button class="p-2 text-green-700 hover:bg-green-100 rounded-full"><i class="ph ph-share-network text-xl"></i></button>
+                        </div>
+                    `;
+                }
+
+                // Render Tabs logic (if checked in)
+                let tabsHtml = '';
+                if (this.state.checkedIn) {
+                    const tabs = ['photos', 'rate', 'notes'];
+                    const tabHeaders = tabs.map(t => `
+                        <button onclick="app.setDetailsTab('${t}')" class="pb-3 px-4 text-sm font-bold capitalize transition-colors ${this.state.detailsTab === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}">
+                            ${t}
+                        </button>
+                    `).join('');
+
+                    let tabContent = '';
+                    if (this.state.detailsTab === 'photos') {
+                        tabContent = `
+                            <div class="grid grid-cols-2 gap-3 mb-4 fade-in">
+                                <div class="aspect-square bg-slate-50 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-300 text-slate-400 cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-500 transition-colors">
+                                    <div class="text-center">
+                                        <i class="ph ph-camera text-2xl mb-1"></i>
+                                        <div class="text-xs font-bold">Add Photo</div>
+                                    </div>
+                                </div>
+                                <div class="aspect-square bg-slate-300 rounded-xl overflow-hidden"><img src="https://placehold.co/400x400/e2e8f0/94a3b8?text=Game+Pic" class="w-full h-full object-cover"></div>
+                                <div class="aspect-square bg-slate-300 rounded-xl overflow-hidden"><img src="https://placehold.co/400x400/e2e8f0/94a3b8?text=Selfie" class="w-full h-full object-cover"></div>
+                            </div>
+                            <div class="text-center text-xs text-slate-400">Photos uploaded here are added to your profile stats.</div>
+                        `;
+                    } else if (this.state.detailsTab === 'rate') {
+                        tabContent = `
+                            <div class="text-center py-4 fade-in">
+                                 <h4 class="font-bold text-slate-900 mb-6">How was the atmosphere?</h4>
+                                 <div class="flex justify-center gap-3 mb-8">
+                                   ${[1,2,3,4,5].map(i => `
+                                     <button onclick="app.setRating(${i})" class="transform transition-transform hover:scale-110 active:scale-95">
+                                       <i class="ph-fill ph-star text-4xl ${i <= this.state.rating ? 'text-yellow-400' : 'text-slate-200'}"></i>
+                                     </button>
+                                   `).join('')}
+                                 </div>
+                                 ${this.state.rating > 0 ? `
+                                   <div class="fade-in">
+                                     <textarea class="w-full p-4 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white mb-4" placeholder="What made it special? (Atmosphere, food, game moment...)" rows="3"></textarea>
+                                     <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-500/30">Submit Review</button>
+                                   </div>
+                                 ` : ''}
+                            </div>
+                        `;
+                    } else if (this.state.detailsTab === 'notes') {
+                        tabContent = `
+                            <div class="fade-in">
+                                <div class="bg-yellow-50 border border-yellow-100 p-4 rounded-xl mb-4">
+                                  <div class="text-xs font-bold text-yellow-600 mb-1 uppercase">Private Note</div>
+                                  <p class="text-slate-700 text-sm italic">"Great seats in section 112. The hot dogs here are surprisingly good."</p>
+                                </div>
+                                <button class="w-full border-2 border-dashed border-slate-300 text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-50 flex items-center justify-center gap-2">
+                                  <i class="ph-bold ph-plus"></i> Add Note
+                                </button>
+                            </div>
+                        `;
+                    }
+
+                    tabsHtml = `
+                        <div class="flex-1 flex flex-col mt-4">
+                            <div class="flex border-b border-slate-100 px-6 shrink-0 gap-4">
+                                ${tabHeaders}
+                            </div>
+                            <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                                ${tabContent}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <div class="flex flex-col h-full bg-white">
+                        ${headerHtml}
+                        ${actionHtml}
+                        ${tabsHtml}
+                        ${!this.state.checkedIn ? '<div class="flex-1 bg-white"></div>' : ''} <!-- Spacer when not checked in -->
+                    </div>
+                `;
+            }
+        };
+
+        // Initialize App
+        app.init();
+    </script>
+</body>
+</html>
