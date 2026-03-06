@@ -12,4 +12,6 @@
 
 [Banana](http://rasdasd.github.io/banana)
 
+[Chronology](http://rasdasd.github.io/chronology)
+
 [LIVE SITE](https://rasdasd.github.io)
