@@ -529,6 +529,34 @@
             animation: slide-up-fade-in 0.8s ease-out forwards;
         }
 
+        @keyframes slide-down-fade-out {
+            0% {
+                max-height: 120px;
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            40% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                max-height: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                margin-bottom: 0;
+                border-width: 0;
+                opacity: 0;
+                transform: scale(0.9);
+                overflow: hidden;
+            }
+        }
+
+        .anim-leave {
+            animation: slide-down-fade-out 0.5s ease-in forwards;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -977,19 +1005,25 @@
                 btnPlace.disabled = true;
 
                 setTimeout(() => {
-                    let correctIndex = timeline.findIndex(ev => ev.year > clueYear);
-                    if (correctIndex === -1) correctIndex = timeline.length;
-
-                    timeline.splice(correctIndex, 0, currentClue);
-                    currentClue = null;
-
-                    renderTimeline();
-
-                    timelineEl.children[correctIndex].classList.add('anim-highlight');
+                    activeItem.classList.add('anim-leave');
 
                     setTimeout(() => {
-                        nextTurn();
-                    }, TURN_TIMEOUT);
+                        let correctIndex = timeline.findIndex(ev => ev.year > clueYear);
+                        if (correctIndex === -1) correctIndex = timeline.length;
+
+                        timeline.splice(correctIndex, 0, currentClue);
+                        currentClue = null;
+
+                        renderTimeline();
+
+                        const correctedItem = timelineEl.children[correctIndex];
+                        correctedItem.classList.add('anim-enter');
+                        correctedItem.classList.add('anim-highlight');
+
+                        setTimeout(() => {
+                            nextTurn();
+                        }, 1000); // Give it a bit more time for the enter animation to play
+                    }, 500); // Wait for anim-leave to finish
                 }, TURN_TIMEOUT);
             }
         });
