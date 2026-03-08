@@ -727,6 +727,9 @@
             // Do not start drag if user clicked a button
             if (e.target.tagName.toLowerCase() === 'button') return;
 
+            // Remove animation class so CSS animation doesn't override JS transform during drag!
+            card.classList.remove('anim-enter');
+
             isDraggingCard = true;
             dragCard = card;
 
@@ -883,6 +886,12 @@
                 const li = document.createElement('li');
                 li.className = 'event-card active-clue anim-enter';
                 li.dataset.year = currentClue.year;
+
+                // Cleanup animation class after it runs, so it doesn't leave lingering 'animation: forwards' 
+                // that override other transforms later.
+                li.addEventListener('animationend', () => {
+                    li.classList.remove('anim-enter');
+                }, { once: true });
                 li.innerHTML = `
                     <div class="event-year">${currentClue.year}</div>
                     <div class="event-icon">${currentClue.icon}</div>
