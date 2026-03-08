@@ -192,6 +192,20 @@
             margin: auto 0;
         }
 
+        .active-clue-container {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.02);
+            border-top: 2px dashed var(--border-color);
+            border-bottom: 2px dashed var(--border-color);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: visible;
+        }
+
         /* The connecting vertical line */
         .timeline::before {
             content: '';
@@ -388,7 +402,6 @@
             min-height: 24px;
             font-family: var(--font-serif);
             transition: opacity 0.3s;
-            display: none;
         }
 
         .status-success {
@@ -515,6 +528,9 @@
                 <ul id="timeline" class="timeline">
                     <!-- Populated by JavaScript -->
                 </ul>
+            </div>
+
+            <div id="active-clue-container" class="active-clue-container">
             </div>
 
             <div class="controls">
@@ -824,6 +840,8 @@
 
         function renderTimeline() {
             timelineEl.innerHTML = '';
+            const clueContainer = document.getElementById('active-clue-container');
+            if (clueContainer) clueContainer.innerHTML = '';
 
             timeline.forEach((event) => {
                 const li = document.createElement('li');
@@ -854,7 +872,13 @@
                     <div class="event-icon">${currentClue.icon}</div>
                     <div class="event-desc">${currentClue.desc}</div>
                 `;
-                timelineEl.appendChild(li);
+
+                const clueContainer = document.getElementById('active-clue-container');
+                if (clueContainer) {
+                    clueContainer.appendChild(li);
+                } else {
+                    timelineEl.appendChild(li);
+                }
             }
         }
 
@@ -889,6 +913,14 @@
             const activeIndex = items.findIndex(el => el.classList.contains('active-clue'));
 
             if (activeIndex === -1) {
+                statusEl.textContent = "Drag the card into the timeline first!";
+                statusEl.className = "status-message status-error";
+                setTimeout(() => {
+                    if (statusEl.textContent === "Drag the card into the timeline first!") {
+                        statusEl.textContent = "";
+                        statusEl.className = "status-message";
+                    }
+                }, 2000);
                 isChecking = false;
                 return;
             }
