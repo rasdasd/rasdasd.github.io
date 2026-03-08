@@ -10,8 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;600;800&display=swap"
         rel="stylesheet">
-    <!-- SortableJS core for drag and drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- Custom drag and drop (vanilla JS pointer events) -->
     <style>
         :root {
             --white: #fff;
@@ -70,7 +69,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
+            /* height: 100vh; */
+            height: 100dvh;
             overflow: hidden;
             padding: 0;
             -webkit-font-smoothing: antialiased;
@@ -79,7 +79,7 @@
         header {
             text-align: center;
             background: var(--bg-card);
-            height: 48px;
+            min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -89,6 +89,8 @@
             top: 0;
             z-index: 10;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            padding-top: env(safe-area-inset-top);
         }
 
         h1 {
@@ -108,13 +110,14 @@
         .game-wrapper {
             width: 100%;
             max-width: var(--max-width);
-            height: calc(100vh - 84px);
+            /* height: calc(100vh - 84px); */
             /* Subtract header height */
             flex: 1;
             display: flex;
             flex-direction: column;
             padding: 0;
             overflow: hidden;
+            min-height: 0;
             /* Prevent scrolling of the whole page */
         }
 
@@ -126,6 +129,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-height: 0;
             /* Keep timeline inside */
             padding-bottom: 8px;
             /* Space for the bottom tracker */
@@ -144,7 +148,7 @@
             }
 
             .game-wrapper {
-                height: calc(100vh - 144px);
+                /* height: calc(100vh - 144px); */
                 /* 84 header + 40 body pad + 20 header margin */
                 padding-bottom: 0;
             }
@@ -174,7 +178,8 @@
             flex-direction: column;
             justify-content: flex-start;
             overflow-y: auto;
-            padding: 16px 16px 0;
+            padding: 24px 16px 0;
+            min-height: 0;
             /* Move padding here so timeline scrolls */
         }
 
@@ -214,6 +219,9 @@
             transition: transform 0.2s, background 0.2s;
             touch-action: none;
             /* Helps with mobile drag */
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
         }
 
         .event-year {
@@ -567,7 +575,6 @@
         let deck = [];
         let timeline = [];
         let currentClue = null;
-        let sortableInstance = null;
 
         // Trackers
         let correctGuesses = 0;
@@ -626,17 +633,22 @@
             gameScreen.classList.remove('hidden');
             endScreen.classList.add('hidden');
 
-            initSortable();
             nextTurn();
         }
 
         let isDraggingCard = false;
         let dragY = 0;
         let scrollRAF = null;
+        let dragCard = null;
+        let placeholder = null;
+        let startX = 0;
+        let startY = 0;
+        let cardStartX = 0;
+        let cardStartY = 0;
 
-        document.addEventListener('dragover', e => dragY = e.clientY, false);
-        document.addEventListener('mousemove', e => dragY = e.clientY, false);
-        document.addEventListener('touchmove', e => dragY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY, { passive: true });
+        document.addEventListener('pointermove', e => {
+            if (isDraggingCard) dragY = e.clientY;
+        }, { passive: true });
 
         function autoScrollLoop() {
             if (!isDraggingCard) return;
@@ -660,43 +672,114 @@
             scrollRAF = requestAnimationFrame(autoScrollLoop);
         }
 
-        function initSortable() {
-            if (sortableInstance) sortableInstance.destroy();
+        function handlePointerDown(e) {
+            const card = e.target.closest('.active-clue');
+            if (!card) return;
 
-            sortableInstance = new Sortable(timelineEl, {
-                animation: 200,
-                delay: 200,           // Add delay for mobile touch to distinct scroll vs drag
-                delayOnTouchOnly: true,
-                scroll: document.querySelector('.timeline-wrapper'),
-                scrollSensitivity: 50,
-                scrollSpeed: 15,
-                bubbleScroll: true,
-                ghostClass: 'sortable-ghost',
-                filter: '.placed',
-                preventOnFilter: false,
-                onMove: function (evt) {
-                    if (evt.dragged.classList.contains('placed')) return false;
-                },
-                onChange: function (evt) {
-                    updateGhostLabel();
-                },
-                onStart: function (evt) {
-                    updateGhostLabel();
-                    isDraggingCard = true;
-                    scrollRAF = requestAnimationFrame(autoScrollLoop);
-                },
-                onEnd: function (evt) {
-                    isDraggingCard = false;
-                    cancelAnimationFrame(scrollRAF);
+            // Do not start drag if user clicked a button
+            if (e.target.tagName.toLowerCase() === 'button') return;
+
+            isDraggingCard = true;
+            dragCard = card;
+
+            startX = e.clientX;
+            startY = e.clientY;
+            dragY = e.clientY;
+
+            const rect = dragCard.getBoundingClientRect();
+            cardStartX = rect.left;
+            cardStartY = rect.top;
+
+            placeholder = document.createElement('li');
+            placeholder.className = 'event-card sortable-ghost';
+            placeholder.style.height = `${rect.height}px`;
+            placeholder.innerHTML = dragCard.innerHTML;
+
+            dragCard.parentNode.insertBefore(placeholder, dragCard);
+
+            dragCard.style.position = 'fixed';
+            dragCard.style.left = `${cardStartX}px`;
+            dragCard.style.top = `${cardStartY}px`;
+            dragCard.style.width = `${rect.width}px`;
+            dragCard.style.margin = '0';
+            dragCard.style.zIndex = '1000';
+            dragCard.style.pointerEvents = 'none';
+            dragCard.style.transition = 'none';
+
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
+            document.addEventListener('pointercancel', handlePointerUp);
+
+            updateGhostLabel();
+            scrollRAF = requestAnimationFrame(autoScrollLoop);
+        }
+
+        function handlePointerMove(e) {
+            if (!isDraggingCard || !dragCard) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            dragCard.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+
+            const placedCards = Array.from(timelineEl.querySelectorAll('.placed'));
+            let insertIndex = placedCards.length;
+
+            for (let i = 0; i < placedCards.length; i++) {
+                const pRect = placedCards[i].getBoundingClientRect();
+                if (e.clientY < pRect.top + pRect.height / 2) {
+                    insertIndex = i;
+                    break;
                 }
-            });
+            }
+
+            if (insertIndex === placedCards.length) {
+                if (placeholder.nextSibling !== null && placeholder.nextSibling !== dragCard) {
+                    timelineEl.appendChild(placeholder);
+                } else if (placeholder.nextSibling === dragCard && dragCard.nextSibling !== null) {
+                    timelineEl.appendChild(placeholder);
+                }
+            } else {
+                const targetNode = placedCards[insertIndex];
+                if (placeholder.nextSibling !== targetNode) {
+                    timelineEl.insertBefore(placeholder, targetNode);
+                }
+            }
+
+            updateGhostLabel();
+        }
+
+        function handlePointerUp(e) {
+            if (!isDraggingCard || !dragCard) return;
+
+            document.removeEventListener('pointermove', handlePointerMove);
+            document.removeEventListener('pointerup', handlePointerUp);
+            document.removeEventListener('pointercancel', handlePointerUp);
+
+            placeholder.parentNode.insertBefore(dragCard, placeholder);
+            placeholder.remove();
+
+            dragCard.style.position = '';
+            dragCard.style.left = '';
+            dragCard.style.top = '';
+            dragCard.style.width = '';
+            dragCard.style.margin = '';
+            dragCard.style.zIndex = '';
+            dragCard.style.transform = '';
+            dragCard.style.pointerEvents = '';
+            dragCard.style.transition = '';
+
+            isDraggingCard = false;
+            dragCard = null;
+            placeholder = null;
+            cancelAnimationFrame(scrollRAF);
         }
 
         function updateGhostLabel() {
             const ghost = document.querySelector('.sortable-ghost');
             if (!ghost) return;
 
-            const items = Array.from(timelineEl.querySelectorAll('.event-card')).filter(el => !el.classList.contains('sortable-drag'));
+            const items = Array.from(timelineEl.querySelectorAll('.event-card')).filter(el => !el.classList.contains('active-clue'));
             const index = items.indexOf(ghost);
 
             let yearBefore = null;
@@ -704,11 +787,11 @@
 
             if (index > 0) {
                 const prev = items[index - 1];
-                if (prev && prev !== ghost) yearBefore = prev.dataset.year;
+                if (prev) yearBefore = prev.dataset.year;
             }
             if (index < items.length - 1) {
                 const next = items[index + 1];
-                if (next && next !== ghost) yearAfter = next.dataset.year;
+                if (next) yearAfter = next.dataset.year;
             }
 
             let label = "Place Here";
@@ -722,6 +805,8 @@
 
             ghost.setAttribute('data-context-label', label);
         }
+
+        timelineEl.addEventListener('pointerdown', handlePointerDown);
 
         function renderTimeline() {
             timelineEl.innerHTML = '';
