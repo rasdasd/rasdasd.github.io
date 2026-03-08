@@ -137,31 +137,7 @@
             /* Space for the bottom tracker */
         }
 
-        @media (min-width: 601px) {
-            body {
-                padding: 20px;
-            }
 
-            header {
-                max-width: var(--max-width);
-                margin-bottom: 20px;
-                border-radius: 8px 8px 0 0;
-                position: static;
-            }
-
-            .game-wrapper {
-                /* height: calc(100vh - 144px); */
-                /* 84 header + 40 body pad + 20 header margin */
-                padding-bottom: 0;
-            }
-
-            .game-container {
-                border-radius: 0 0 8px 8px;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-                border: 1px solid var(--border-color);
-                border-top: none;
-            }
-        }
 
         .instructions {
             text-align: center;
@@ -435,20 +411,7 @@
             background: var(--error);
         }
 
-        @media (min-width: 601px) {
-            .bottom-tracker {
-                position: static;
-                width: 100%;
-                background: transparent;
-                box-shadow: none;
-                border: none;
-                padding-bottom: 0;
-            }
 
-            .game-wrapper {
-                position: relative;
-            }
-        }
 
         /* Animations for correction */
         @keyframes shake {
